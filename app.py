@@ -1,8 +1,10 @@
 """
 McDill University Advancement - Executive Analytics & CASE Intelligence Portal
 File: app.py
-Description: Lean, clean executive dashboard inspired by Tabler UI with native cards,
-             built-in metric tooltips, prominent dropdown navigation, and zero raw HTML code block leaks.
+Description: High-contrast Executive Midnight Theme inspired by modern dark-mode dashboards
+             (Power BI Dark, Linear, Datadog), featuring crystal-clear legibility,
+             prestigious university branding, detailed multi-line metric tooltips,
+             module strategic overviews, and vibrant high-contrast data visualizations.
 """
 
 import streamlit as st
@@ -13,7 +15,7 @@ import plotly.graph_objects as go
 import os
 
 # =============================================================================
-# 1. PAGE CONFIGURATION & TABLER-STYLE CLEAN CSS
+# 1. PAGE CONFIGURATION & EXECUTIVE HIGH-CONTRAST DARK THEME
 # =============================================================================
 st.set_page_config(
     page_title="McDill Advancement Dashboard | FY26",
@@ -22,7 +24,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for Tabler UI Look
+# Custom High-Contrast Theme CSS (Executive Midnight & Slate)
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
@@ -31,46 +33,91 @@ st.markdown("""
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     }
     
-    /* Clean Page Background */
+    /* Clean Midnight Canvas Background */
     .stApp {
-        background-color: #F8FAFC;
+        background-color: #0F172A;
+        color: #F8FAFC;
     }
     
-    /* Native Container Border Wrapper (Tabler Card Style) */
+    .block-container {
+        padding-top: 1.5rem !important;
+        padding-bottom: 2.5rem !important;
+    }
+    
+    /* Executive Card Containers */
     [data-testid="stVerticalBlockBorderWrapper"] {
-        background-color: #FFFFFF !important;
-        border: 1px solid #E2E8F0 !important;
-        border-radius: 10px !important;
-        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03) !important;
-        padding: 4px !important;
+        background-color: #1E293B !important;
+        border: 1px solid #334155 !important;
+        border-radius: 12px !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25) !important;
+        padding: 6px !important;
     }
     
-    /* Native Metric Styling */
+    [data-testid="stVerticalBlockBorderWrapper"]:hover {
+        border-color: #475569 !important;
+        transition: border-color 0.2s ease;
+    }
+    
+    /* Ultra-Crisp Metric Typography */
     [data-testid="stMetric"] {
-        padding: 8px 10px !important;
+        padding: 10px 12px !important;
     }
     
     [data-testid="stMetricLabel"] {
         font-size: 11px !important;
-        font-weight: 600 !important;
-        color: #64748B !important;
+        font-weight: 700 !important;
+        color: #94A3B8 !important;
         text-transform: uppercase !important;
-        letter-spacing: 0.04em !important;
+        letter-spacing: 0.05em !important;
     }
     
     [data-testid="stMetricValue"] {
-        font-size: 24px !important;
+        font-size: 26px !important;
         font-weight: 800 !important;
-        color: #0F172A !important;
+        color: #FFFFFF !important;
         letter-spacing: -0.02em !important;
     }
     
     [data-testid="stMetricDelta"] {
-        font-size: 11px !important;
+        font-size: 12px !important;
         font-weight: 700 !important;
     }
     
-    /* Hide Default Footer */
+    /* Tooltip / Help Target Icon Styling */
+    [data-testid="stTooltipHoverTarget"] {
+        color: #94A3B8 !important;
+    }
+    [data-testid="stTooltipHoverTarget"]:hover {
+        color: #38BDF8 !important;
+    }
+    div[data-baseweb="popover"], div[role="tooltip"] {
+        background-color: #0F172A !important;
+        border: 1px solid #475569 !important;
+        color: #F8FAFC !important;
+        font-size: 12.5px !important;
+        border-radius: 8px !important;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5) !important;
+    }
+    
+    /* Headings */
+    h1, h2, h3, h4, h5, h6 {
+        color: #FFFFFF !important;
+        font-weight: 700 !important;
+    }
+    
+    /* Subtle divider */
+    hr {
+        border-color: #334155 !important;
+    }
+    
+    /* Streamlit Selectbox and Widgets */
+    [data-testid="stSelectbox"] label p {
+        color: #CBD5E1 !important;
+        font-weight: 600 !important;
+        font-size: 13px !important;
+    }
+    
+    /* Hide Default Header/Footer */
     footer {visibility: hidden;}
     #MainMenu {visibility: hidden;}
 </style>
@@ -140,27 +187,70 @@ df_master = load_and_preprocess_advancement_data()
 
 
 # =============================================================================
-# 3. PLOTLY THEME HELPER
+# 3. HELPER FUNCTIONS: THEMES, TOOLTIPS, & MODULE INTRO BANNERS
 # =============================================================================
-def apply_tabler_theme(fig, height=270):
-    """Applies clean Tabler UI styling to Plotly figures."""
+def apply_dark_theme(fig, height=270):
+    """
+    Applies high-contrast dark theme styling with crystal-clear visibility.
+    """
     fig.update_layout(
-        font=dict(family="Inter, -apple-system, sans-serif", size=11, color="#334155"),
+        font=dict(family="Inter, -apple-system, sans-serif", size=11, color="#CBD5E1"),
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
         height=height,
-        margin=dict(l=35, r=20, t=15, b=30),
+        margin=dict(l=35, r=20, t=20, b=30),
         hovermode="closest",
         hoverlabel=dict(
-            bgcolor="#0F172A",
+            bgcolor="#020617",
             font_size=11,
             font_color="#FFFFFF",
-            font_family="Inter, sans-serif"
+            font_family="Inter, sans-serif",
+            bordercolor="#475569"
         )
     )
-    fig.update_xaxes(showgrid=True, gridcolor="#F1F5F9", tickfont=dict(size=10, color="#64748B"))
-    fig.update_yaxes(showgrid=True, gridcolor="#F1F5F9", tickfont=dict(size=10, color="#64748B"))
+    fig.update_xaxes(showgrid=True, gridcolor="#334155", tickfont=dict(size=10, color="#94A3B8"), zeroline=False)
+    fig.update_yaxes(showgrid=True, gridcolor="#334155", tickfont=dict(size=10, color="#94A3B8"), zeroline=False)
     return fig
+
+
+def format_tooltip(description: str, calculation: str, benchmark: str = None) -> str:
+    """
+    Constructs a standardized, detailed metric tooltip string:
+    - 1-line definition
+    - CRM calculation logic
+    - Benchmark / Target reference
+    """
+    lines = [
+        f"📌 Definition: {description}",
+        f"📐 Calculation: {calculation}"
+    ]
+    if benchmark:
+        lines.append(f"🎯 Target / Benchmark: {benchmark}")
+    return "\n\n".join(lines)
+
+
+def render_view_banner(title: str, objective: str, visualizations: list[str]):
+    """
+    Renders an executive summary card before the metrics for each view.
+    Explains the module objective and what analytics/visualizations appear.
+    """
+    items_html = "".join([f"<li style='margin-bottom: 4px; color: #CBD5E1;'>{item}</li>" for item in visualizations])
+    banner_html = f"""<div style="background-color: #1E293B; border: 1px solid #334155; border-left: 4px solid #ED1B2F; border-radius: 10px; padding: 14px 18px; margin-bottom: 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+<div style="font-size: 16px; font-weight: 700; color: #FFFFFF; margin-bottom: 6px;">{title}</div>
+<div style="display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 20px;">
+<div>
+<div style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Module Scope & Objective</div>
+<div style="font-size: 13px; color: #E2E8F0; line-height: 1.5;">{objective}</div>
+</div>
+<div>
+<div style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Key Analytics & Visualizations</div>
+<ul style="margin: 0; padding-left: 16px; font-size: 12.5px; line-height: 1.45;">
+{items_html}
+</ul>
+</div>
+</div>
+</div>"""
+    st.markdown(banner_html, unsafe_allow_html=True)
 
 
 # =============================================================================
@@ -169,16 +259,16 @@ def apply_tabler_theme(fig, height=270):
 with st.sidebar:
     st.markdown("### 🔍 Global Slicers")
     all_faculties = sorted(df_master['Primary_Faculty'].unique().tolist())
-    selected_faculties = st.multiselect("Faculty", options=all_faculties, default=all_faculties)
+    selected_faculties = st.multiselect("Academic Faculty", options=all_faculties, default=all_faculties)
     
     cohort_options = ['All Cohorts', 'Young Alumni (<10 yrs)', 'Mid-Career (10-25 yrs)', 'Senior Alumni (25+ yrs)']
-    quick_cohort = st.selectbox("Cohort", options=cohort_options, index=0)
+    quick_cohort = st.selectbox("Cohort Selector", options=cohort_options, index=0)
     
     all_regions = ['Quebec', 'Rest of Canada', 'United States', 'International']
-    selected_regions = st.multiselect("Region", options=all_regions, default=all_regions)
+    selected_regions = st.multiselect("Geographic Region", options=all_regions, default=all_regions)
     
     all_tiers = ['Tier 1: $100k+', 'Tier 2: $25k-$99k', 'Tier 3: $5k-$24k', 'Tier 4: $1k-$4.9k', 'Tier 5: Under $1k', 'Unrated']
-    selected_tiers = st.multiselect("Wealth Tier", options=all_tiers, default=all_tiers)
+    selected_tiers = st.multiselect("Wealth Capacity Tier", options=all_tiers, default=all_tiers)
     
     if st.button("Reset Filters", use_container_width=True):
         st.rerun()
@@ -211,12 +301,57 @@ roi_mult = (tot_rev_fy26 / tot_cost) if tot_cost > 0 else 0.0
 
 
 # =============================================================================
-# 5. PROMINENT SECTION SELECTOR (BIG DROPDOWN)
+# 5. PRESTIGIOUS BRANDING HEADER & MODULE SELECTOR
 # =============================================================================
-st.markdown("### 🎓 McDill University Advancement Intelligence")
+header_branding_html = f"""<div style="display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 18px 24px; background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%); border: 1px solid #334155; border-radius: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.3); margin-bottom: 18px;">
+<div style="display: flex; align-items: center; gap: 20px;">
+<div style="display: flex; align-items: center; justify-content: center; width: 64px; height: 64px; background: #0F172A; border: 1.5px solid #475569; border-radius: 14px; box-shadow: inset 0 2px 6px rgba(0,0,0,0.4); flex-shrink: 0;">
+<svg width="44" height="44" viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<linearGradient id="crestGrad" x1="0" y1="0" x2="54" y2="54" gradientUnits="userSpaceOnUse">
+<stop offset="0%" stop-color="#ED1B2F"/>
+<stop offset="100%" stop-color="#991B1B"/>
+</linearGradient>
+<linearGradient id="goldGrad" x1="0" y1="0" x2="54" y2="54" gradientUnits="userSpaceOnUse">
+<stop offset="0%" stop-color="#FDE68A"/>
+<stop offset="50%" stop-color="#F59E0B"/>
+<stop offset="100%" stop-color="#D97706"/>
+</linearGradient>
+</defs>
+<path d="M27 6L43 13.5V26C43 36 36 43.5 27 47C18 43.5 11 36 11 26V13.5L27 6Z" fill="url(#crestGrad)" stroke="url(#goldGrad)" stroke-width="2"/>
+<path d="M19 24C22.5 22.5 27 23.5 27 25.5C27 23.5 31.5 22.5 35 24V34C31.5 32.5 27 33.5 27 35.5C27 33.5 22.5 32.5 19 34V24Z" fill="#FFFFFF" fill-opacity="0.95"/>
+<path d="M27 25.5V35.5" stroke="#991B1B" stroke-width="1.4"/>
+<polygon points="27,11 28.5,15 32.5,15 29.5,17.5 30.5,21.5 27,19 23.5,21.5 24.5,17.5 21.5,15 25.5,15" fill="url(#goldGrad)"/>
+</svg>
+</div>
+<div>
+<div style="font-size: 11px; font-weight: 700; color: #F87171; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 2px;">
+MCDILL UNIVERSITY • DIVISION OF UNIVERSITY ADVANCEMENT
+</div>
+<div style="font-size: 28px; font-weight: 800; color: #FFFFFF; letter-spacing: -0.025em; line-height: 1.2;">
+Advancement Intelligence & Executive Analytics
+</div>
+<div style="font-size: 13.5px; color: #94A3B8; margin-top: 4px; line-height: 1.4;">
+Enterprise decision-support portal tracking FY2026 philanthropic revenue velocity, alumni donor lifecycle migration, campaign ROI, and CASE 4-pillar engagement.
+</div>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex-shrink: 0;">
+<span style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; font-size: 11.5px; font-weight: 700; color: #34D399; background: rgba(52, 211, 153, 0.12); border: 1px solid rgba(52, 211, 153, 0.35); border-radius: 20px;">
+<span style="width: 7px; height: 7px; border-radius: 50%; background: #34D399; box-shadow: 0 0 6px #34D399;"></span>
+FY2026 Reporting Cycle
+</span>
+<span style="display: inline-block; padding: 4px 10px; font-size: 11px; font-weight: 600; color: #60A5FA; background: rgba(96, 165, 250, 0.1); border: 1px solid rgba(96, 165, 250, 0.25); border-radius: 20px;">
+CASE AEM Framework
+</span>
+</div>
+</div>"""
 
+st.markdown(header_branding_html, unsafe_allow_html=True)
+
+# Prominent Module Selector (Big Dropdown)
 selected_module = st.selectbox(
-    "SELECT VIEW / MODULE:",
+    "SELECT ADVANCEMENT MODULE / ANALYTIC VIEW:",
     options=[
         "📊 Executive Overview (Landing Dashboard)",
         "🏛️ Philanthropic Health & Revenue",
@@ -228,18 +363,27 @@ selected_module = st.selectbox(
     index=0
 )
 
-st.caption(f"Active Universe: **{n_filtered:,} Records** | **${tot_rev_fy26/1e6:.2f}M Commitments** | **{donors_fy26:,} Donors**")
+st.caption(f"Active Universe Filter Scope: **{n_filtered:,} Records** | **${tot_rev_fy26/1e6:.2f}M Commitments** | **{donors_fy26:,} Active Donors**")
 st.markdown("---")
 
 
 # =============================================================================
-# VIEW 1: EXECUTIVE OVERVIEW (LANDING PAGE - TABLER UI INSPIRATION)
+# VIEW 1: EXECUTIVE OVERVIEW (LANDING PAGE)
 # =============================================================================
 if selected_module == "📊 Executive Overview (Landing Dashboard)":
     
-    st.subheader("Dashboard")
+    render_view_banner(
+        title="📊 Executive Overview Dashboard",
+        objective="Provides a unified single-pane executive summary of McDill University's overall philanthropic health, pacing toward annual strategic targets, and holistic alumni engagement.",
+        visualizations=[
+            "6 Top-line institutional KPIs with YoY deltas and detailed benchmarks",
+            "Multi-year revenue velocity (FY24–FY26) and Top 5 faculty commitments",
+            "Gift designation allocation share and CASE 4-pillar engagement distribution",
+            "McDill24 Giving Day blitz yield, monthly recurring sustainers, and annual goal pacing"
+        ]
+    )
     
-    # 6 Top-Line KPI Cards (Using Native st.metric with clean tooltips)
+    # 6 Top-Line KPI Cards
     k1, k2, k3, k4, k5, k6 = st.columns(6)
     
     with k1:
@@ -248,7 +392,11 @@ if selected_module == "📊 Executive Overview (Landing Dashboard)":
                 label="Total Revenue",
                 value=f"${tot_rev_fy26/1e6:.2f}M",
                 delta="+14% YoY",
-                help="Total philanthropic commitments booked in FY26 across all university designations.\n\nU15 Benchmark: $3.0M – $6.5M"
+                help=format_tooltip(
+                    description="Total cumulative philanthropic gifts, pledges, and outright commitments booked in FY26 across all university funds.",
+                    calculation="Sum of Giving_Amount_FY26 for all constituents within active filter criteria.",
+                    benchmark="U15 Group of Canadian Research Universities Benchmark: $3.0M – $6.5M."
+                )
             )
     with k2:
         with st.container(border=True):
@@ -256,7 +404,11 @@ if selected_module == "📊 Executive Overview (Landing Dashboard)":
                 label="Active Donors",
                 value=f"{donors_fy26:,}",
                 delta="+7% YoY",
-                help="Distinct constituents contributing at least one gift in FY26.\n\nTarget: 4,000 – 4,800 active donors"
+                help=format_tooltip(
+                    description="Total unique addressable constituents who completed at least one monetary donation in FY26.",
+                    calculation="Distinct count of Constituent_IDs with Gift_Count_FY26 > 0.",
+                    benchmark="Institutional Annual Target: 4,000 – 4,800 active donors."
+                )
             )
     with k3:
         with st.container(border=True):
@@ -264,7 +416,11 @@ if selected_module == "📊 Executive Overview (Landing Dashboard)":
                 label="Participation",
                 value=f"{part_rate:.1f}%",
                 delta="+1.2%",
-                help="Percentage of addressable alumni who contributed.\n\nCASE U15 Average: 8% – 12%"
+                help=format_tooltip(
+                    description="Proportion of the addressable, contactable alumni universe who contributed financially in FY26.",
+                    calculation="(FY26 Active Donors / Total Addressable Universe Count) × 100.",
+                    benchmark="CASE U15 Higher Education Standard: 8.0% – 12.0%."
+                )
             )
     with k4:
         with st.container(border=True):
@@ -272,7 +428,11 @@ if selected_module == "📊 Executive Overview (Landing Dashboard)":
                 label="Retention Rate",
                 value=f"{retention_rate:.1f}%",
                 delta="+2.5%",
-                help="Repeat FY25 donors who contributed again in FY26.\n\nCASE National Standard: 60% – 65%"
+                help=format_tooltip(
+                    description="Proportion of prior-year (FY25) donors who renewed their financial support in FY26.",
+                    calculation="(Donors giving in BOTH FY25 and FY26 / Total Active Donors in FY25) × 100.",
+                    benchmark="CASE National Advancement Standard: 60.0% – 65.0%."
+                )
             )
     with k5:
         with st.container(border=True):
@@ -280,7 +440,11 @@ if selected_module == "📊 Executive Overview (Landing Dashboard)":
                 label="Average Gift",
                 value=f"${avg_gift:,.0f}",
                 delta="+5% YoY",
-                help="Total revenue divided by active donor headcount.\n\nTarget: $700 – $850"
+                help=format_tooltip(
+                    description="Mean philanthropic commitment per contributing donor across all colleges and designations.",
+                    calculation="Total FY26 Philanthropic Revenue / Total FY26 Active Donors.",
+                    benchmark="Institutional Target: $700 – $850 per donor."
+                )
             )
     with k6:
         with st.container(border=True):
@@ -288,7 +452,11 @@ if selected_module == "📊 Executive Overview (Landing Dashboard)":
                 label="Marketing ROI",
                 value=f"{roi_mult:.1f}x",
                 delta="+2.1x",
-                help="Philanthropic revenue generated per dollar of outreach cost.\n\nAFP Standard: > 6.7x"
+                help=format_tooltip(
+                    description="Multiplier of philanthropic revenue generated relative to direct marketing and outreach costs.",
+                    calculation="Total FY26 Revenue / Total Marketing_Outreach_Cost_FY26.",
+                    benchmark="Association of Fundraising Professionals (AFP) Benchmark: > 6.7x."
+                )
             )
             
     st.markdown("<div style='margin-bottom: 8px;'></div>", unsafe_allow_html=True)
@@ -299,7 +467,7 @@ if selected_module == "📊 Executive Overview (Landing Dashboard)":
     with col_left:
         with st.container(border=True):
             st.markdown("##### Development Activity (FY24 – FY26)")
-            st.caption("Multi-year philanthropic commitments revenue velocity ($ CAD)")
+            st.caption("Multi-year philanthropic revenue velocity ($ CAD)")
             
             my_df = pd.DataFrame({
                 'Year': ['FY2024', 'FY2025', 'FY2026'],
@@ -311,14 +479,15 @@ if selected_module == "📊 Executive Overview (Landing Dashboard)":
                 x=my_df['Year'],
                 y=my_df['Revenue'],
                 mode='lines+markers',
-                line=dict(color='#206BC4', width=3, shape='spline'),
+                name='Revenue ($)',
+                line=dict(color='#38BDF8', width=3, shape='spline'),
                 fill='tozeroy',
-                fillcolor='rgba(32, 107, 196, 0.08)',
-                marker=dict(size=7, color='#206BC4'),
+                fillcolor='rgba(56, 189, 248, 0.15)',
+                marker=dict(size=8, color='#38BDF8'),
                 hovertemplate="<b>%{x}</b><br>Revenue: %{y:$,.0f}<extra></extra>"
             ))
-            apply_tabler_theme(fig_area, height=210)
-            fig_area.update_layout(yaxis=dict(tickformat='$,.0s', showgrid=True))
+            fig_area.update_yaxes(tickformat='$,.0s')
+            apply_dark_theme(fig_area, height=210)
             st.plotly_chart(fig_area, use_container_width=True)
             
             st.markdown("##### Faculty Commitments Summary")
@@ -346,14 +515,23 @@ if selected_module == "📊 Executive Overview (Landing Dashboard)":
                 names='Last_Gift_Designation',
                 values='Giving_Amount_FY26',
                 hole=0.62,
-                color_discrete_sequence=['#2FB344', '#206BC4', '#4299E1', '#F59F00', '#D63939']
+                color_discrete_sequence=['#34D399', '#38BDF8', '#818CF8', '#FBBF24', '#F87171']
             )
             fig_d1.update_traces(
                 textposition='inside',
                 textinfo='percent',
+                insidetextfont=dict(color="#FFFFFF", size=11),
                 hovertemplate="<b>%{label}</b><br>%{value:$,.0f} (%{percent})<extra></extra>"
             )
-            fig_d1.update_layout(height=180, margin=dict(l=10, r=10, t=5, b=5), showlegend=False)
+            fig_d1.update_layout(
+                height=185,
+                margin=dict(l=10, r=10, t=5, b=5),
+                showlegend=True,
+                legend=dict(orientation="h", y=-0.15, font=dict(size=9, color="#CBD5E1")),
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                font=dict(color="#CBD5E1")
+            )
             st.plotly_chart(fig_d1, use_container_width=True)
             
         with st.container(border=True):
@@ -370,19 +548,28 @@ if selected_module == "📊 Executive Overview (Landing Dashboard)":
                 hole=0.62,
                 color='Label',
                 color_discrete_map={
-                    '0 Modes': '#CBD5E1',
-                    '1 Mode': '#93C5FD',
-                    '2 Modes': '#206BC4',
-                    '3 Modes': '#2FB344',
-                    '4 Modes': '#D63939'
+                    '0 Modes': '#475569',
+                    '1 Mode': '#60A5FA',
+                    '2 Modes': '#38BDF8',
+                    '3 Modes': '#34D399',
+                    '4 Modes': '#F87171'
                 }
             )
             fig_d2.update_traces(
                 textposition='inside',
                 textinfo='percent',
+                insidetextfont=dict(color="#FFFFFF", size=11),
                 hovertemplate="<b>%{label}</b><br>%{value:,} Alumni (%{percent})<extra></extra>"
             )
-            fig_d2.update_layout(height=180, margin=dict(l=10, r=10, t=5, b=5), showlegend=False)
+            fig_d2.update_layout(
+                height=185,
+                margin=dict(l=10, r=10, t=5, b=5),
+                showlegend=True,
+                legend=dict(orientation="h", y=-0.15, font=dict(size=9, color="#CBD5E1")),
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                font=dict(color="#CBD5E1")
+            )
             st.plotly_chart(fig_d2, use_container_width=True)
 
     # Bottom Row: 3 Secondary Metric Cards
@@ -398,7 +585,11 @@ if selected_module == "📊 Executive Overview (Landing Dashboard)":
                 label="McDill24 Giving Day",
                 value=f"${mcdill24_rev/1e3:,.0f}K",
                 delta=f"{(mcdill24_rev/tot_rev_fy26*100):.1f}% Share of Total",
-                help="Dollars raised during the 24-hour digital campaign.\n\nCASE Benchmark: 15% – 25%"
+                help=format_tooltip(
+                    description="Philanthropic revenue secured during the university's annual 24-hour digital giving campaign.",
+                    calculation="Sum of McGill24_Gift_Amount_FY26 across all participating alumni.",
+                    benchmark="Campaign Target: 15.0% – 25.0% of total annual commitments."
+                )
             )
     with b2:
         with st.container(border=True):
@@ -406,7 +597,11 @@ if selected_module == "📊 Executive Overview (Landing Dashboard)":
                 label="Monthly Sustainers",
                 value=f"{sustainers_cnt:,}",
                 delta=f"{(sustainers_cnt/donors_fy26*100):.1f}% of Donors",
-                help="Donors giving via recurring monthly gifts.\n\nTarget: 20% – 25% of donors"
+                help=format_tooltip(
+                    description="Donors enrolled in automated, recurring monthly gift subscriptions providing steady predictable cashflow.",
+                    calculation="Count of constituents where Is_Monthly_Sustainer_FY26 = 1 (Gift_Count_FY26 >= 6).",
+                    benchmark="Strategic Institutional Objective: 20.0% – 25.0% of active donors."
+                )
             )
     with b3:
         with st.container(border=True):
@@ -414,7 +609,11 @@ if selected_module == "📊 Executive Overview (Landing Dashboard)":
                 label="Campaign Goal Pace",
                 value=f"{pct_goal:.1f}%",
                 delta=f"${(target_goal - tot_rev_fy26)/1e3:,.0f}K to Target",
-                help="Progress towards the $4.0M annual strategic goal."
+                help=format_tooltip(
+                    description="Cumulative progress achieved toward the $4.00M annual institutional advancement stretch target.",
+                    calculation="(Total FY26 Revenue / $4,000,000 Annual Target) × 100.",
+                    benchmark="Year-end target: 100% pacing by June 30."
+                )
             )
 
 
@@ -422,19 +621,55 @@ if selected_module == "📊 Executive Overview (Landing Dashboard)":
 # VIEW 2: PHILANTHROPIC HEALTH & REVENUE
 # =============================================================================
 elif selected_module == "🏛️ Philanthropic Health & Revenue":
-    st.subheader("Philanthropic Health & Commitments")
+    
+    render_view_banner(
+        title="🏛️ Philanthropic Health & Commitments",
+        objective="Performs an in-depth financial evaluation of university fundraising yield, multi-year revenue growth velocity, and giving tier concentration to evaluate long-term financial stability.",
+        visualizations=[
+            "Core revenue metrics: Total commitments, average gift yield, and McDill24 Giving Day yield",
+            "Multi-year trajectory bar chart comparing FY24, FY25, and FY26 fundraising totals",
+            "Giving tier Pareto dispersion (<$100 to $10k+) showing gift volume and revenue distribution"
+        ]
+    )
     
     p1, p2, p3 = st.columns(3)
     mcdill24_rev = filtered_df['McGill24_Gift_Amount_FY26'].sum()
     with p1:
         with st.container(border=True):
-            st.metric(label="FY26 Total Commitments", value=f"${tot_rev_fy26:,.0f}", delta="+14.2% YoY", help="Total gifts received across all funds in FY26.")
+            st.metric(
+                label="FY26 Total Commitments",
+                value=f"${tot_rev_fy26:,.0f}",
+                delta="+14.2% YoY",
+                help=format_tooltip(
+                    description="Gross philanthropic commitments received across all funds, chairs, and faculties in FY26.",
+                    calculation="Sum of Giving_Amount_FY26 across all filtered constituent records.",
+                    benchmark="Annual Operational Plan Target: $3.25M."
+                )
+            )
     with p2:
         with st.container(border=True):
-            st.metric(label="Average Gift Yield", value=f"${avg_gift:,.2f}", delta="Median: $150", help="Revenue divided by donor count.")
+            st.metric(
+                label="Average Gift Yield",
+                value=f"${avg_gift:,.2f}",
+                delta="Median: $150",
+                help=format_tooltip(
+                    description="Average philanthropic revenue yield per active donor, reflecting gift size distribution.",
+                    calculation="Total FY26 Revenue / Total FY26 Active Donors.",
+                    benchmark="U15 Peer Median: $725."
+                )
+            )
     with p3:
         with st.container(border=True):
-            st.metric(label="McDill24 Campaign", value=f"${mcdill24_rev:,.0f}", delta=f"{(mcdill24_rev/tot_rev_fy26*100):.1f}% Share", help="Annual 24-hour giving day total.")
+            st.metric(
+                label="McDill24 Campaign",
+                value=f"${mcdill24_rev:,.0f}",
+                delta=f"{(mcdill24_rev/tot_rev_fy26*100):.1f}% Share",
+                help=format_tooltip(
+                    description="Philanthropic commitments mobilized during the 24-hour university-wide blitz.",
+                    calculation="Sum of McGill24_Gift_Amount_FY26 across all giving day transactions.",
+                    benchmark="Campaign Target: > 18.0% of annual revenue."
+                )
+            )
             
     c1, c2 = st.columns(2)
     with c1:
@@ -445,11 +680,12 @@ elif selected_module == "🏛️ Philanthropic Health & Revenue":
                 x=['FY24', 'FY25', 'FY26'],
                 y=[tot_rev_fy24, tot_rev_fy25, tot_rev_fy26],
                 name='Revenue ($)',
-                marker_color='#206BC4',
+                marker_color='#38BDF8',
                 text=[f"${tot_rev_fy24/1e6:.2f}M", f"${tot_rev_fy25/1e6:.2f}M", f"${tot_rev_fy26/1e6:.2f}M"],
                 textposition='outside'
             ))
-            apply_tabler_theme(fig_traj, height=270)
+            fig_traj.update_yaxes(title_text="Total Raised ($ CAD)")
+            apply_dark_theme(fig_traj, height=270)
             st.plotly_chart(fig_traj, use_container_width=True)
             
     with c2:
@@ -462,9 +698,9 @@ elif selected_module == "🏛️ Philanthropic Health & Revenue":
                 labels=['<$100', '$100-$499', '$500-$2.4k', '$2.5k-$9.9k', '$10k+']
             )
             t_data = tier_agg.groupby('Tier', observed=True)['Giving_Amount_FY26'].sum().reset_index()
-            fig_tier = px.bar(t_data, x='Tier', y='Giving_Amount_FY26', color='Giving_Amount_FY26', color_continuous_scale='Blues')
-            apply_tabler_theme(fig_tier, height=270)
-            fig_tier.update_layout(coloraxis_showscale=False, yaxis=dict(title='Total Raised ($)'))
+            fig_tier = px.bar(t_data, x='Tier', y='Giving_Amount_FY26', color_discrete_sequence=['#38BDF8'])
+            fig_tier.update_yaxes(title_text='Total Raised ($)')
+            apply_dark_theme(fig_tier, height=270)
             st.plotly_chart(fig_tier, use_container_width=True)
 
 
@@ -472,7 +708,15 @@ elif selected_module == "🏛️ Philanthropic Health & Revenue":
 # VIEW 3: DONOR LIFECYCLE & RETENTION FUNNEL
 # =============================================================================
 elif selected_module == "🔄 Donor Lifecycle & Retention Funnel":
-    st.subheader("Donor Lifecycle & Retention")
+    
+    render_view_banner(
+        title="🔄 Donor Lifecycle & Retention Funnel",
+        objective="Tracks constituent migration dynamics across the giving lifecycle—measuring consecutive renewal, attrition prevention (LYBUNT), lapsed reactivation, and first-time donor acquisition.",
+        visualizations=[
+            "4 Lifecycle KPIs: Consecutive retention, lapsed reactivation, acquisition, monthly sustainers",
+            "Multi-stage Sankey donor migration diagram mapping FY25 donor status to FY26 outcomes"
+        ]
+    )
     
     gave_prior_pool = (filtered_df['Gave_Prior'] == 1) & (filtered_df['Donated_FY25'] == 0)
     n_lapsed = gave_prior_pool.sum()
@@ -489,16 +733,52 @@ elif selected_module == "🔄 Donor Lifecycle & Retention Funnel":
     l1, l2, l3, l4 = st.columns(4)
     with l1:
         with st.container(border=True):
-            st.metric(label="Consecutive Retention", value=f"{retention_rate:.1f}%", delta="+2.5%", help="CASE: 60%–65%")
+            st.metric(
+                label="Consecutive Retention",
+                value=f"{retention_rate:.1f}%",
+                delta="+2.5%",
+                help=format_tooltip(
+                    description="Percentage of FY25 active donors who renewed their financial contribution in FY26.",
+                    calculation="(Donors with Gift_Count_FY25 > 0 AND Gift_Count_FY26 > 0) / Total Donors with Gift_Count_FY25 > 0 × 100.",
+                    benchmark="CASE National Standard: 60.0% – 65.0%."
+                )
+            )
     with l2:
         with st.container(border=True):
-            st.metric(label="Lapsed Reactivation", value=f"{react_rate:.1f}%", delta=f"{reactivated:,} Donors", help="CASE: 10%–12%")
+            st.metric(
+                label="Lapsed Reactivation",
+                value=f"{react_rate:.1f}%",
+                delta=f"{reactivated:,} Donors",
+                help=format_tooltip(
+                    description="Percentage of prior lapsed donors who skipped FY25 but were successfully reactivated in FY26.",
+                    calculation="(Donated FY26 AND Gave Prior to FY25 AND Did NOT Donate FY25) / Total Prior Lapsed Pool × 100.",
+                    benchmark="CASE Benchmark: 10.0% – 12.0%."
+                )
+            )
     with l3:
         with st.container(border=True):
-            st.metric(label="New Acquisition", value=f"{acq_rate:.1f}%", delta=f"{acquired:,} Donors", help="Benchmark: 3%–6%")
+            st.metric(
+                label="New Acquisition",
+                value=f"{acq_rate:.1f}%",
+                delta=f"{acquired:,} Donors",
+                help=format_tooltip(
+                    description="Conversion rate of lifetime non-donors making their very first gift to the university in FY26.",
+                    calculation="(First-Time Donors in FY26 / Total Addressable Never-Givers Pool) × 100.",
+                    benchmark="Higher Education Benchmark: 3.0% – 6.0%."
+                )
+            )
     with l4:
         with st.container(border=True):
-            st.metric(label="Monthly Sustainers", value=f"{(sustainers/donors_fy26*100):.1f}%", delta=f"{sustainers:,} Donors", help="Target: 20%–25%")
+            st.metric(
+                label="Monthly Sustainers",
+                value=f"{(sustainers/donors_fy26*100):.1f}%",
+                delta=f"{sustainers:,} Donors",
+                help=format_tooltip(
+                    description="Proportion of the active donor base contributing via automated monthly recurring donations.",
+                    calculation="(Monthly Sustainer Count / Total FY26 Donors) × 100.",
+                    benchmark="Industry Standard: 20.0% – 25.0%."
+                )
+            )
 
     with st.container(border=True):
         st.markdown("##### Donor Migration Flow (FY25 ➔ FY26)")
@@ -509,16 +789,21 @@ elif selected_module == "🔄 Donor Lifecycle & Retention Funnel":
                 label=[f"FY25 Donors ({donors_fy25:,})", f"Prior Lapsed ({n_lapsed:,})", f"Never Gave ({n_never:,})",
                        f"Retained ({retained_25_26:,})", f"LYBUNT ({lybunt:,})", f"Reactivated ({reactivated:,})",
                        f"Dormant ({n_lapsed-reactivated:,})", f"Acquired ({acquired:,})", f"Unacquired ({n_never-acquired:,})"],
-                color=["#0F172A", "#F59E0B", "#94A3B8", "#10B981", "#EF4444", "#206BC4", "#CBD5E1", "#ED1B2F", "#E2E8F0"]
+                color=["#60A5FA", "#FBBF24", "#94A3B8", "#34D399", "#F87171", "#38BDF8", "#64748B", "#F43F5E", "#475569"]
             ),
             link=dict(
                 source=[0, 0, 1, 1, 2, 2],
                 target=[3, 4, 5, 6, 7, 8],
                 value=[retained_25_26, lybunt, reactivated, n_lapsed-reactivated, acquired, n_never-acquired],
-                color=["rgba(16,185,129,0.35)", "rgba(239,68,68,0.35)", "rgba(32,107,196,0.35)", "rgba(203,213,225,0.35)", "rgba(237,27,47,0.35)", "rgba(226,232,240,0.35)"]
+                color=["rgba(52,211,153,0.35)", "rgba(248,113,113,0.35)", "rgba(56,189,248,0.35)", "rgba(100,116,139,0.35)", "rgba(244,63,94,0.35)", "rgba(71,85,105,0.35)"]
             )
         ))
-        fig_sankey.update_layout(height=320, margin=dict(l=10, r=10, t=10, b=10), font=dict(family="Inter", size=11))
+        fig_sankey.update_layout(
+            height=320,
+            margin=dict(l=10, r=10, t=10, b=10),
+            paper_bgcolor="rgba(0,0,0,0)",
+            font=dict(family="Inter", size=11, color="#F8FAFC")
+        )
         st.plotly_chart(fig_sankey, use_container_width=True)
 
 
@@ -526,7 +811,16 @@ elif selected_module == "🔄 Donor Lifecycle & Retention Funnel":
 # VIEW 4: MARKETING EFFICIENCY & CHANNELS
 # =============================================================================
 elif selected_module == "📈 Marketing Efficiency & Channels":
-    st.subheader("Marketing Efficiency & Digital Funnel")
+    
+    render_view_banner(
+        title="📈 Marketing Efficiency & Digital Funnel",
+        objective="Analyzes the economic efficiency of advancement marketing outreach, solicitation channel conversion efficacy, and the multi-step digital giving conversion funnel.",
+        visualizations=[
+            "4 Marketing KPIs: Cost per $ raised, marketing ROI multiplier, email open rate, GA4 web giving conversion",
+            "Channel conversion rate comparison across Crowdfunding, Direct Mail, Digital, and Phone",
+            "5-Stage digital giving funnel from delivery and open to click, web visit, and completed gift"
+        ]
+    )
     
     cpdr = (tot_cost / tot_rev_fy26) if tot_rev_fy26 > 0 else 0.0
     open_rate = (filtered_df['Emails_Opened_FY26'].sum() / filtered_df['Emails_Delivered_FY26'].sum() * 100) if filtered_df['Emails_Delivered_FY26'].sum() > 0 else 0.0
@@ -537,16 +831,52 @@ elif selected_module == "📈 Marketing Efficiency & Channels":
     m1, m2, m3, m4 = st.columns(4)
     with m1:
         with st.container(border=True):
-            st.metric(label="Cost per $ Raised", value=f"${cpdr:.4f}", delta="AFP Standard < $0.15", help="AFP Standard: < $0.15")
+            st.metric(
+                label="Cost per $ Raised",
+                value=f"${cpdr:.4f}",
+                delta="AFP Standard < $0.15",
+                help=format_tooltip(
+                    description="Direct marketing and solicitation expenditure incurred for each single dollar of philanthropic revenue secured.",
+                    calculation="Total Marketing_Outreach_Cost_FY26 / Total FY26 Revenue.",
+                    benchmark="Association of Fundraising Professionals (AFP) Standard: Under $0.15."
+                )
+            )
     with m2:
         with st.container(border=True):
-            st.metric(label="Marketing ROI", value=f"{roi_mult:.1f}x", delta="Total Spend: " + f"${tot_cost:,.0f}")
+            st.metric(
+                label="Marketing ROI",
+                value=f"{roi_mult:.1f}x",
+                delta=f"Total Spend: ${tot_cost:,.0f}",
+                help=format_tooltip(
+                    description="Overall marketing efficiency ratio measuring revenue return generated per marketing dollar invested.",
+                    calculation="Total FY26 Revenue / Total Marketing_Outreach_Cost_FY26.",
+                    benchmark="AFP Best-in-Class Benchmark: > 6.7x."
+                )
+            )
     with m3:
         with st.container(border=True):
-            st.metric(label="Email Open Rate", value=f"{open_rate:.1f}%", delta="Higher Ed Avg ~28%")
+            st.metric(
+                label="Email Open Rate",
+                value=f"{open_rate:.1f}%",
+                delta="Higher Ed Avg ~28%",
+                help=format_tooltip(
+                    description="Engagement rate of direct digital appeal emails delivered to alumni and prospective donors.",
+                    calculation="(Total Emails_Opened_FY26 / Total Emails_Delivered_FY26) × 100.",
+                    benchmark="Higher Education Nonprofit Benchmark: 25.0% – 30.0%."
+                )
+            )
     with m4:
         with st.container(border=True):
-            st.metric(label="GA4 Web Conversion", value=f"{web_conv:.1f}%", delta=f"{web_donors:,} Donors")
+            st.metric(
+                label="GA4 Web Conversion",
+                value=f"{web_conv:.1f}%",
+                delta=f"{web_donors:,} Donors",
+                help=format_tooltip(
+                    description="Proportion of unique visitors to the institutional online giving portal who completed a gift transaction.",
+                    calculation="(Constituents with GA4 Giving Page Views AND Donated FY26 / Total Constituents with Giving Page Views) × 100.",
+                    benchmark="Nonprofit E-Commerce Giving Benchmark: 15.0% – 22.0%."
+                )
+            )
             
     c_m1, c_m2 = st.columns(2)
     with c_m1:
@@ -557,10 +887,10 @@ elif selected_module == "📈 Marketing Efficiency & Channels":
                 Total=('Constituent_ID', 'count')
             ).reset_index()
             chan_df['Conv'] = chan_df['Donors'] / chan_df['Total'] * 100
-            fig_c = px.bar(chan_df, x='Display_Channel', y='Conv', color='Conv', color_continuous_scale='Blues', text=chan_df['Conv'].apply(lambda x: f"{x:.1f}%"))
+            fig_c = px.bar(chan_df, x='Display_Channel', y='Conv', color_discrete_sequence=['#2DD4BF'], text=chan_df['Conv'].apply(lambda x: f"{x:.1f}%"))
             fig_c.update_traces(textposition='outside')
-            apply_tabler_theme(fig_c, height=270)
-            fig_c.update_layout(coloraxis_showscale=False, yaxis=dict(title='Conversion (%)'))
+            fig_c.update_yaxes(title_text='Conversion (%)')
+            apply_dark_theme(fig_c, height=270)
             st.plotly_chart(fig_c, use_container_width=True)
             
     with c_m2:
@@ -576,9 +906,14 @@ elif selected_module == "📈 Marketing Efficiency & Channels":
                     donors_fy26
                 ],
                 textinfo="value+percent initial",
-                marker=dict(color=["#0F172A", "#206BC4", "#4299E1", "#F59F00", "#10B981"])
+                marker=dict(color=["#475569", "#60A5FA", "#38BDF8", "#FBBF24", "#34D399"])
             ))
-            fig_fun.update_layout(height=270, margin=dict(l=10, r=10, t=10, b=10), font=dict(family="Inter", size=10))
+            fig_fun.update_layout(
+                height=270,
+                margin=dict(l=10, r=10, t=10, b=10),
+                paper_bgcolor="rgba(0,0,0,0)",
+                font=dict(family="Inter", size=10, color="#F8FAFC")
+            )
             st.plotly_chart(fig_fun, use_container_width=True)
 
 
@@ -586,7 +921,16 @@ elif selected_module == "📈 Marketing Efficiency & Channels":
 # VIEW 5: CASE 4-PILLAR ENGAGEMENT (AEM)
 # =============================================================================
 elif selected_module == "🤝 CASE 4-Pillar Engagement (AEM)":
-    st.subheader("CASE 4-Pillar Engagement (AEM)")
+    
+    render_view_banner(
+        title="🤝 CASE 4-Pillar Engagement (AEM)",
+        objective="Operationalizes the Council for Advancement and Support of Education (CASE) Alumni Engagement Metrics across Philanthropic, Experiential, Volunteer, and Communication modes to measure overall constituent relationship depth.",
+        visualizations=[
+            "4 CASE Engagement KPIs: Event attendance rate, ticket show rate, 2+ pillar multi-mode rate, active volunteers",
+            "CASE multi-pillar engagement lift showing exponential giving rate increases by pillar count",
+            "Homecoming reunion milestone spikes highlighting alumni engagement across graduating classes"
+        ]
+    )
     
     events_att = (filtered_df['Events_Attended_FY26'] > 0).sum()
     event_rate = (events_att / n_filtered * 100) if n_filtered > 0 else 0.0
@@ -597,16 +941,52 @@ elif selected_module == "🤝 CASE 4-Pillar Engagement (AEM)":
     e1, e2, e3, e4 = st.columns(4)
     with e1:
         with st.container(border=True):
-            st.metric(label="Event Attendance", value=f"{event_rate:.1f}%", delta=f"{events_att:,} Alumni", help="CASE Experiential: 10%–15%")
+            st.metric(
+                label="Event Attendance",
+                value=f"{event_rate:.1f}%",
+                delta=f"{events_att:,} Alumni",
+                help=format_tooltip(
+                    description="Proportion of alumni participating in at least one university event (Experiential Pillar).",
+                    calculation="(Constituents with Events_Attended_FY26 > 0 / Total Addressable Alumni) × 100.",
+                    benchmark="CASE Experiential Engagement Standard: 10.0% – 15.0%."
+                )
+            )
     with e2:
         with st.container(border=True):
-            st.metric(label="Ticket Show Rate", value=f"{show_rate:.1f}%", delta="Realized Attendees", help="Benchmark: 55%–65%")
+            st.metric(
+                label="Ticket Show Rate",
+                value=f"{show_rate:.1f}%",
+                delta="Realized Attendees",
+                help=format_tooltip(
+                    description="Percentage of event registrants who physically or virtually attended the registered programming.",
+                    calculation="(Total Events_Attended_FY26 / Total Events_Registered_FY26) × 100.",
+                    benchmark="Industry Event Attendance Average: 55.0% – 65.0%."
+                )
+            )
     with e3:
         with st.container(border=True):
-            st.metric(label="2+ CASE Modes", value=f"{(multi_pillar/n_filtered*100):.1f}%", delta="43.7% Giving Rate", help="Lift Law: 2+ modes 9x higher giving")
+            st.metric(
+                label="2+ CASE Modes",
+                value=f"{(multi_pillar/n_filtered*100):.1f}%",
+                delta="43.7% Giving Rate",
+                help=format_tooltip(
+                    description="Percentage of alumni engaged across two or more CASE pillars (Philanthropic, Experiential, Volunteer, Communication).",
+                    calculation="(Constituents with CASE_Pillar_Count >= 2 / Total Universe) × 100.",
+                    benchmark="Multi-Modal Engagement Lift: Alumni in 2+ modes demonstrate 9x higher giving rates."
+                )
+            )
     with e4:
         with st.container(border=True):
-            st.metric(label="Active Volunteers", value=f"{(volunteers/n_filtered*100):.1f}%", delta=f"{volunteers:,} Leaders", help="Target: 4%–7%")
+            st.metric(
+                label="Active Volunteers",
+                value=f"{(volunteers/n_filtered*100):.1f}%",
+                delta=f"{volunteers:,} Leaders",
+                help=format_tooltip(
+                    description="Share of constituents serving in an active institutional advisory, mentoring, or alumni board capacity (Volunteer Pillar).",
+                    calculation="(Constituents with Is_Active_Volunteer_FY26 = 1 / Total Universe) × 100.",
+                    benchmark="Higher Education Target: 4.0% – 7.0%."
+                )
+            )
             
     c_e1, c_e2 = st.columns(2)
     with c_e1:
@@ -617,10 +997,10 @@ elif selected_module == "🤝 CASE 4-Pillar Engagement (AEM)":
                 Total=('Constituent_ID', 'count')
             ).reset_index()
             aem_df['Giving_Rate'] = aem_df['Donors'] / aem_df['Total'] * 100
-            fig_lift = px.bar(aem_df, x='CASE_Pillar_Count', y='Giving_Rate', color='CASE_Pillar_Count', color_continuous_scale='Blues', text=aem_df['Giving_Rate'].apply(lambda x: f"{x:.1f}%"))
+            fig_lift = px.bar(aem_df, x='CASE_Pillar_Count', y='Giving_Rate', color_discrete_sequence=['#34D399'], text=aem_df['Giving_Rate'].apply(lambda x: f"{x:.1f}%"))
             fig_lift.update_traces(textposition='outside')
-            apply_tabler_theme(fig_lift, height=270)
-            fig_lift.update_layout(coloraxis_showscale=False, yaxis=dict(title='Giving Rate (%)'))
+            fig_lift.update_yaxes(title_text='Giving Rate (%)')
+            apply_dark_theme(fig_lift, height=270)
             st.plotly_chart(fig_lift, use_container_width=True)
             
     with c_e2:
@@ -629,9 +1009,9 @@ elif selected_module == "🤝 CASE 4-Pillar Engagement (AEM)":
             years = filtered_df.groupby('Years_Since_Grad')['Attended_Homecoming_FY26'].mean().reset_index()
             years['Rate'] = years['Attended_Homecoming_FY26'] * 100
             fig_home = px.line(years, x='Years_Since_Grad', y='Rate', markers=True)
-            fig_home.update_traces(line=dict(color='#ED1B2F', width=2), marker=dict(size=4))
-            apply_tabler_theme(fig_home, height=270)
-            fig_home.update_layout(yaxis=dict(title='Homecoming Rate (%)'))
+            fig_home.update_traces(line=dict(color='#F43F5E', width=2.5), marker=dict(size=5, color='#F43F5E'))
+            fig_home.update_yaxes(title_text='Homecoming Rate (%)')
+            apply_dark_theme(fig_home, height=270)
             st.plotly_chart(fig_home, use_container_width=True)
 
 
@@ -639,7 +1019,16 @@ elif selected_module == "🤝 CASE 4-Pillar Engagement (AEM)":
 # VIEW 6: PROSPECT CAPACITY & FACULTY INTELLIGENCE
 # =============================================================================
 elif selected_module == "💎 Prospect Capacity & Faculty Intelligence":
-    st.subheader("Prospect Capacity & Faculty Intelligence")
+    
+    render_view_banner(
+        title="💎 Prospect Capacity & Faculty Intelligence",
+        objective="Leverages wealth screening capacity ratings and academic faculty commitments to prioritize high-capacity major gift cultivation and optimize development officer pipeline coverage.",
+        visualizations=[
+            "3 Major Gift KPIs: Top tier giving ($100k+ and $25k-$99k), Tier 1 conversion %, Tier 2 conversion %",
+            "Faculty commitments league table showing total philanthropic dollars raised per academic unit",
+            "Wealth screening matrix table displaying alumni headcount, donor conversion %, and total commitments"
+        ]
+    )
     
     t1_t2_rev = filtered_df[filtered_df['Wealth_Screening_Rating'].isin(['Tier 1: $100k+', 'Tier 2: $25k-$99k'])]['Giving_Amount_FY26'].sum()
     t1_df = filtered_df[filtered_df['Wealth_Screening_Rating'] == 'Tier 1: $100k+']
@@ -650,22 +1039,50 @@ elif selected_module == "💎 Prospect Capacity & Faculty Intelligence":
     w1, w2, w3 = st.columns(3)
     with w1:
         with st.container(border=True):
-            st.metric(label="Top Tier Giving", value=f"${t1_t2_rev/1e6:.2f}M", delta=f"{(t1_t2_rev/tot_rev_fy26*100):.1f}% Total Funds", help="Tiers 1 & 2 generate > 68% of commitments")
+            st.metric(
+                label="Top Tier Giving",
+                value=f"${t1_t2_rev/1e6:.2f}M",
+                delta=f"{(t1_t2_rev/tot_rev_fy26*100):.1f}% Total Funds",
+                help=format_tooltip(
+                    description="Philanthropic commitments secured from major and principal gift prospects (Tiers 1 & 2).",
+                    calculation="Sum of Giving_Amount_FY26 for constituents rated Tier 1 ($100k+) or Tier 2 ($25k-$99k).",
+                    benchmark="Pareto Target: Major gift tiers generate > 65.0% of total institutional commitments."
+                )
+            )
     with w2:
         with st.container(border=True):
-            st.metric(label="Tier 1 ($100k+) Conv", value=f"{t1_conv:.1f}%", delta=f"{len(t1_df):,} Prospects", help="Target: > 60% participation")
+            st.metric(
+                label="Tier 1 ($100k+) Conv",
+                value=f"{t1_conv:.1f}%",
+                delta=f"{len(t1_df):,} Prospects",
+                help=format_tooltip(
+                    description="Philanthropic conversion rate among highest-capacity rated alumni prospects ($100,000+ estimated wealth).",
+                    calculation="(Tier 1 Donors with Gift_Count_FY26 > 0 / Total Tier 1 Rated Prospects) × 100.",
+                    benchmark="Principal Gift Solicitation Target: > 60.0% active participation."
+                )
+            )
     with w3:
         with st.container(border=True):
-            st.metric(label="Tier 2 ($25k-$99k) Conv", value=f"{t2_conv:.1f}%", delta=f"{len(t2_df):,} Prospects", help="Target: > 45% participation")
+            st.metric(
+                label="Tier 2 ($25k-$99k) Conv",
+                value=f"{t2_conv:.1f}%",
+                delta=f"{len(t2_df):,} Prospects",
+                help=format_tooltip(
+                    description="Philanthropic conversion rate among leadership annual and major gift prospects ($25,000–$99,000 capacity).",
+                    calculation="(Tier 2 Donors with Gift_Count_FY26 > 0 / Total Tier 2 Rated Prospects) × 100.",
+                    benchmark="Major Gift Solicitation Target: > 45.0% active participation."
+                )
+            )
             
     c_f1, c_f2 = st.columns([1.1, 0.9])
     with c_f1:
         with st.container(border=True):
             st.markdown("##### Faculty Commitments ($ CAD)")
             fac_league = filtered_df.groupby('Primary_Faculty')['Giving_Amount_FY26'].sum().reset_index().sort_values(by='Giving_Amount_FY26', ascending=True)
-            fig_fl = px.bar(fac_league, x='Giving_Amount_FY26', y='Primary_Faculty', orientation='h', color='Giving_Amount_FY26', color_continuous_scale='Blues')
-            apply_tabler_theme(fig_fl, height=300)
-            fig_fl.update_layout(coloraxis_showscale=False, yaxis=dict(title=''))
+            fig_fl = px.bar(fac_league, x='Giving_Amount_FY26', y='Primary_Faculty', orientation='h', color_discrete_sequence=['#38BDF8'])
+            fig_fl.update_yaxes(title_text='')
+            fig_fl.update_xaxes(title_text='Commitments ($ CAD)')
+            apply_dark_theme(fig_fl, height=300)
             st.plotly_chart(fig_fl, use_container_width=True)
             
     with c_f2:
@@ -682,7 +1099,7 @@ elif selected_module == "💎 Prospect Capacity & Faculty Intelligence":
 
 
 # =============================================================================
-# 7. MINIMAL FOOTER
+# 6. MINIMAL FOOTER
 # =============================================================================
 st.markdown("---")
-st.caption("McDill University Advancement Analytics • Lean Executive Dashboard • FY2026 Reporting Year")
+st.caption("McDill University Advancement Analytics • High-Contrast Executive Dashboard • FY2026 Reporting Year")
