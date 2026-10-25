@@ -61,8 +61,7 @@ The extract contains 30,000 rows across five functional database domains:
 - `Lifetime_Giving_Amount_Prior_To_FY24`: Total cumulative giving amount prior to FY24 ($0.0$ if count is $0$, otherwise log-normal).
 - `Gift_Count_FY24` & `Giving_Amount_FY24`: Giving activity in FY24 (~13% donor rate; Pareto curve from $\$20$ to $\$25,000$).
 - `Gift_Count_FY25` & `Giving_Amount_FY25`: Giving activity in FY25 (~14% donor rate; ~62% retention from FY24).
-- `Gift_Count_FY26` & `Giving_Amount_FY26`: Giving activity in FY26 (~15% donor rate; 60–65% retention from FY25; 10–12% lapsed reactivation).
-- `McGill24_Gift_Amount_FY26`: Giving recorded on McDill24 Giving Day ($0.0$ if non-donor; $\le \text{Giving\_Amount\_FY26}$).
+- `McGill24_Gift_Amount_FY26`: Giving recorded on McDill24 Giving Day (`0.0` if non-donor; `<= Giving_Amount_FY26`).
 - `Is_Monthly_Sustainer_FY26`: Recurring monthly giver flag (`1` iff `Gift_Count_FY26 >= 6`, representing ~23.5% of FY26 donors).
 - `Last_Gift_Date`: ISO date string (`YYYY-MM-DD`) of most recent donation; `None` for non-donors. (McDill24 gifts concentrated on `2026-03-11`).
 - `Last_Gift_Designation`: Designated philanthropic allocation (`The McDill Fund (Unrestricted)`, `Student Scholarships & Bursaries`, `Faculty Priority Fund`, `Research & Discovery`, `Varsity Athletics & Martlets/Redbirds`); `None` for non-donors.
