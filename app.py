@@ -45,7 +45,7 @@ st.markdown("""
     }
     
     .block-container {
-        padding-top: 1.2rem !important;
+        padding-top: 3.2rem !important;
         padding-bottom: 2.5rem !important;
     }
     
@@ -395,15 +395,16 @@ def format_tooltip(description: str, calculation: str, benchmark: str = None) ->
     return "\n\n".join(lines)
 
 
-def render_view_banner(title: str, objective: str, visualizations: list[str]):
+def render_view_banner(title: str, objective: str, visualizations: list[str] = None, pillars: list[dict] = None):
     """
     Renders an executive summary card before the metrics for each view.
-    Explains the module objective and what analytics/visualizations appear.
+    - If visualizations are provided (Landing Page), renders 2-column layout.
+    - If pillars are provided (CASE 4 Module), renders 4-pillar definition cards.
+    - Otherwise, renders a clean, single-column scope & objective banner without redundant plot lists.
     """
-    items_html = "".join([f"<li style='margin-bottom: 4px; color: #CBD5E1;'>{item}</li>" for item in visualizations])
-    banner_html = f"""<div style="background-color: #1E293B; border: 1px solid #334155; border-left: 4px solid #ED1B2F; border-radius: 10px; padding: 14px 18px; margin-bottom: 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
-<div style="font-size: 16px; font-weight: 700; color: #FFFFFF; margin-bottom: 6px;">{title}</div>
-<div style="display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 20px;">
+    if visualizations and len(visualizations) > 0:
+        items_html = "".join([f"<li style='margin-bottom: 4px; color: #CBD5E1;'>{item}</li>" for item in visualizations])
+        content_html = f"""<div style="display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 20px;">
 <div>
 <div style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Module Scope & Objective</div>
 <div style="font-size: 13px; color: #E2E8F0; line-height: 1.5;">{objective}</div>
@@ -414,7 +415,33 @@ def render_view_banner(title: str, objective: str, visualizations: list[str]):
 {items_html}
 </ul>
 </div>
+</div>"""
+    elif pillars and len(pillars) > 0:
+        pillar_cards = []
+        for p in pillars:
+            p_card = f"""<div style="background: #0F172A; border: 1px solid #334155; border-radius: 8px; padding: 10px 12px;">
+<div style="font-size: 13px; font-weight: 700; color: #FFFFFF; margin-bottom: 4px;">{p['icon']} {p['name']}</div>
+<div style="font-size: 11.5px; color: #94A3B8; line-height: 1.4;">{p['desc']}</div>
+</div>"""
+            pillar_cards.append(p_card)
+        pillars_grid = "".join(pillar_cards)
+        content_html = f"""<div>
+<div style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Module Scope & Objective</div>
+<div style="font-size: 13px; color: #E2E8F0; line-height: 1.5; margin-bottom: 12px;">{objective}</div>
+<div style="font-size: 11px; font-weight: 700; color: #38BDF8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">The 4 CASE AEM Engagement Pillars</div>
+<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+{pillars_grid}
 </div>
+</div>"""
+    else:
+        content_html = f"""<div>
+<div style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Module Scope & Objective</div>
+<div style="font-size: 13.5px; color: #E2E8F0; line-height: 1.5;">{objective}</div>
+</div>"""
+
+    banner_html = f"""<div style="background-color: #1E293B; border: 1px solid #334155; border-left: 4px solid #ED1B2F; border-radius: 10px; padding: 14px 18px; margin-bottom: 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+<div style="font-size: 16px; font-weight: 700; color: #FFFFFF; margin-bottom: 8px;">{title}</div>
+{content_html}
 </div>"""
     st.markdown(banner_html, unsafe_allow_html=True)
 
@@ -535,7 +562,7 @@ roi_mult = (tot_rev_fy26 / tot_cost) if tot_cost > 0 else 0.0
 # =============================================================================
 # 5. UNBOXED 60PX TITLE & MODULE SELECTOR (NO LOGO, CLEAN & OPEN)
 # =============================================================================
-title_html = """<div style="text-align: center; margin: 0 auto 20px auto; padding: 6px 0;">
+title_html = """<div style="text-align: center; margin: 16px auto 20px auto; padding: 12px 0 6px 0;">
 <div style="font-size: 60px; font-weight: 900; color: #FFFFFF; letter-spacing: -0.035em; line-height: 1.1; margin-bottom: 12px;">
 McDill University Advancement Intelligence
 </div>
@@ -660,13 +687,13 @@ if selected_module == "📊 Executive Overview (Landing Dashboard)":
                 )
             )
             
-    # 3 Secondary KPI Cards (Placed Directly Beneath Top Cards for Alignment)
+    # 3 Secondary KPI Cards (Centered and Identical Width to Top 6 Cards)
     mcdill24_rev = filtered_df['McGill24_Gift_Amount_FY26'].sum()
     sustainers_cnt = (filtered_df['Is_Monthly_Sustainer_FY26'] == 1).sum()
     target_goal = 4000000.0
     pct_goal = (tot_rev_fy26 / target_goal * 100)
     
-    b1, b2, b3 = st.columns(3)
+    _, b1, b2, b3, _ = st.columns([1.5, 1, 1, 1, 1.5])
     with b1:
         with st.container(border=True):
             st.metric(
@@ -715,7 +742,7 @@ if selected_module == "📊 Executive Overview (Landing Dashboard)":
         with st.container(border=True):
             st.subheader(
                 "Development Revenue Velocity (FY24 – FY26)",
-                help="Tracks multi-year philanthropic revenue velocity across fiscal years FY2024 through FY2026 ($ CAD). Displays annual giving momentum as a shaded velocity area to highlight year-over-year fundraising growth and campaign pacing."
+                help="About: Tracks multi-year philanthropic revenue trajectory across fiscal years FY24 through FY26.\n\nHow to Read: Shaded area shows revenue growth over time; steeper slopes indicate accelerating fundraising momentum."
             )
             st.caption("Multi-year philanthropic revenue velocity ($ CAD)")
             
@@ -744,7 +771,7 @@ if selected_module == "📊 Executive Overview (Landing Dashboard)":
         with st.container(border=True):
             st.subheader(
                 "Gift Designation Allocation Share",
-                help="Visualizes the allocation of FY26 philanthropic gifts across university priority funds, student aid, and academic departments. Displays the percentage share of total dollars directed to unrestricted versus designated causes."
+                help="About: Displays the percentage distribution of FY26 giving across institutional fund priorities.\n\nHow to Read: Slices represent fund share of total dollars; larger arcs indicate higher donor dollar concentration."
             )
             desig_df = filtered_df[filtered_df['Giving_Amount_FY26'] > 0].groupby('Last_Gift_Designation')['Giving_Amount_FY26'].sum().reset_index()
             fig_d1 = px.pie(
@@ -780,7 +807,7 @@ if selected_module == "📊 Executive Overview (Landing Dashboard)":
         with st.container(border=True):
             st.subheader(
                 "Graduation Class Year Timeline (1965 – 2025)",
-                help="Visualizes the historical distribution of constituents across graduating class years from 1965 through 2025. Displays graduation volume trends and alumni cohort expansion over six decades of institutional history."
+                help="About: Illustrates constituent headcount distribution across graduation class years from 1965 to 2025.\n\nHow to Read: Peaks show expanding graduating class sizes and higher addressable alumni density."
             )
             cy_df = filtered_df.groupby('Class_Year').size().reset_index(name='Constituents')
             fig_cy = go.Figure()
@@ -802,7 +829,7 @@ if selected_module == "📊 Executive Overview (Landing Dashboard)":
         with st.container(border=True):
             st.subheader(
                 "Generational Age Distribution (Birth Cohorts)",
-                help="Categorizes constituents by demographic generation based on birth year (Silent Generation, Baby Boomers, Generation X, Millennials, Generation Z). Highlights age composition to tailor multi-generational communication and gift appeals."
+                help="About: Categorizes alumni into demographic generations based on birth year.\n\nHow to Read: Bar heights reflect constituent counts per generation to help guide generational communication strategy."
             )
             gen_order = ['Silent (<=1945)', 'Boomers (1946-64)', 'Gen X (1965-80)', 'Millennials (1981-96)', 'Gen Z (1997+)']
             gen_df = filtered_df['Generation'].value_counts().reindex(gen_order).fillna(0).reset_index()
@@ -831,7 +858,7 @@ if selected_module == "📊 Executive Overview (Landing Dashboard)":
         with st.container(border=True):
             st.subheader(
                 "Constituent Gender Identity Breakdown",
-                help="Displays the demographic distribution of constituents by reported gender identity (Female, Male, Non-Binary / Other). Evaluates gender representation across the addressable alumni database."
+                help="About: Shows the demographic breakdown of addressable alumni by reported gender identity.\n\nHow to Read: Donut segments display constituent percentages across Female, Male, and Non-Binary/Other identities."
             )
             gender_df = filtered_df.groupby('Gender_Label').size().reset_index(name='Count')
             fig_gen_pie = px.pie(
@@ -867,7 +894,7 @@ if selected_module == "📊 Executive Overview (Landing Dashboard)":
         with st.container(border=True):
             st.subheader(
                 "Global Footprint (Top Countries of Residence)",
-                help="Analyzes the international footprint of addressable constituents by country of residence. Displays alumni population concentrations across Canada, the United States, the United Kingdom, France, and international regions."
+                help="About: Measures the geographic dispersion of addressable alumni across top countries of residence.\n\nHow to Read: Longer horizontal bars represent countries with larger addressable alumni populations."
             )
             country_df = filtered_df.groupby('Country_of_Residence').size().reset_index(name='Count').sort_values('Count', ascending=True)
             fig_country = px.bar(
@@ -893,7 +920,7 @@ if selected_module == "📊 Executive Overview (Landing Dashboard)":
         with st.container(border=True):
             st.subheader(
                 "Academic Faculty Constituent Distribution",
-                help="Displays the distribution of addressable constituents across all academic divisions and faculties. Highlights the relative scale of alumni populations and donor concentrations across Management, Science, Medicine, Arts, and Engineering."
+                help="About: Displays addressable alumni headcounts across McDill academic faculties.\n\nHow to Read: Longer bars represent faculties with larger total alumni bases available for engagement."
             )
             fac_counts = filtered_df.groupby('Primary_Faculty').size().reset_index(name='Constituents').sort_values('Constituents', ascending=True)
             fig_fac = px.bar(
@@ -914,7 +941,7 @@ if selected_module == "📊 Executive Overview (Landing Dashboard)":
         with st.container(border=True):
             st.subheader(
                 "CASE 4-Pillar Multi-Modal Engagement Depth",
-                help="Measures constituent relationship depth across the CASE Alumni Engagement Metrics framework (Philanthropic, Experiential, Volunteer, Communication). Displays the percentage of alumni engaged across 0, 1, 2, 3, or all 4 engagement modes."
+                help="About: Measures the proportion of alumni engaged across 0, 1, 2, 3, or all 4 CASE engagement pillars.\n\nHow to Read: Segments show the breakdown from unengaged (0 modes) to deeply involved multi-modal champions (4 modes)."
             )
             aem_counts = filtered_df['CASE_Pillar_Count'].value_counts().sort_index().reset_index()
             aem_counts.columns = ['Pillars', 'Count']
@@ -961,7 +988,7 @@ if selected_module == "📊 Executive Overview (Landing Dashboard)":
     with st.container(border=True):
         st.subheader(
             "📋 CRM Dataset Snapshot & Interactive Column Dictionary",
-            help="Displays an exploratory snapshot of the underlying institutional advancement CRM dataset across all 41 constituent attributes. Hover over any column header to view its business definition and usage."
+            help="About: Interactive preview of the advancement CRM dataset across all 41 constituent attributes.\n\nHow to Read: Hover over any column header to inspect its definition and business calculation logic."
         )
         st.caption("Showing the first 5 records across all 41 columns. **Hover over any column header** to inspect its data definition in a few words.")
         
@@ -989,14 +1016,7 @@ elif selected_module == "🏛️ Philanthropic Health & Revenue":
     
     render_view_banner(
         title="🏛️ Philanthropic Health & Commitments",
-        objective="Performs an in-depth financial evaluation of university fundraising yield, multi-year revenue growth velocity, and giving tier concentration to evaluate long-term financial stability.",
-        visualizations=[
-            "Core revenue metrics: Total commitments, average gift yield, and McDill24 Giving Day yield",
-            "Plot 1: Multi-Year Commitments Trajectory comparing FY24, FY25, and FY26 fundraising totals",
-            "Plot 2: Giving Amount Tier Concentration (Pareto Dispersion from <$100 to $10k+)",
-            "Plot 3: Monthly Giving Seasonality Trend highlighting year-end and giving day cashflow spikes",
-            "Plot 4: Average Gift Yield by Academic Faculty illustrating unit-level gift sizes"
-        ]
+        objective="Performs an in-depth financial evaluation of university fundraising yield, multi-year revenue growth velocity, and giving tier concentration to evaluate long-term financial stability."
     )
     
     p1, p2, p3 = st.columns(3)
@@ -1045,7 +1065,7 @@ elif selected_module == "🏛️ Philanthropic Health & Revenue":
         with st.container(border=True):
             st.subheader(
                 "Multi-Year Commitments Trajectory (FY24–FY26)",
-                help="Compares total gross philanthropic commitments raised across the last three fiscal years (FY24, FY25, and FY26). Displays year-over-year revenue bars with exact dollar totals to evaluate longitudinal fundraising trends."
+                help="About: Compares total philanthropic commitments raised across fiscal years FY24, FY25, and FY26.\n\nHow to Read: Compare annual bar heights to assess year-over-year fundraising growth and financial trajectory."
             )
             fig_traj = go.Figure()
             fig_traj.add_trace(go.Bar(
@@ -1064,7 +1084,7 @@ elif selected_module == "🏛️ Philanthropic Health & Revenue":
         with st.container(border=True):
             st.subheader(
                 "Giving Amount Tier Concentration (Pareto Dispersion)",
-                help="Breaks down FY26 philanthropic revenue across five distinct giving tiers ranging from under $100 to $10,000+. Displays gift size concentration to illustrate how major and leadership gifts drive total fundraising volume."
+                help="About: Breaks down total FY26 revenue across five gift amount brackets from <$100 to $10k+.\n\nHow to Read: Higher bars show which giving tiers contribute the largest share of overall fundraising dollars."
             )
             tier_agg = filtered_df[filtered_df['Giving_Amount_FY26'] > 0].copy()
             tier_agg['Tier'] = pd.cut(
@@ -1091,7 +1111,7 @@ elif selected_module == "🏛️ Philanthropic Health & Revenue":
         with st.container(border=True):
             st.subheader(
                 "Monthly Giving Seasonality Trend",
-                help="Analyzes the timing of philanthropic gifts throughout the fiscal calendar (July through June). Highlights seasonal cashflow acceleration during the December calendar year-end and March McDill24 Giving Day."
+                help="About: Tracks the monthly distribution of gift transactions throughout the fiscal year.\n\nHow to Read: Line peaks identify high-volume giving windows around calendar year-end and Giving Day."
             )
             filtered_df['Gift_Month'] = pd.to_datetime(filtered_df['Last_Gift_Date'], errors='coerce').dt.strftime('%b')
             month_order = ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']
@@ -1107,7 +1127,7 @@ elif selected_module == "🏛️ Philanthropic Health & Revenue":
         with st.container(border=True):
             st.subheader(
                 "Average Gift Yield by Academic Faculty",
-                help="Evaluates the mean donation yield ($ CAD per donor) across each academic faculty. Highlights divisions with high-average commitment yields such as Medicine, Law, and Management."
+                help="About: Measures the average donation amount per contributing donor across academic faculties.\n\nHow to Read: Longer bars denote faculties whose donors contribute higher average gift amounts."
             )
             fac_yield = filtered_df.groupby('Primary_Faculty').agg(
                 Donors=('Donated_FY26', 'sum'),
@@ -1137,14 +1157,7 @@ elif selected_module == "🔄 Donor Lifecycle & Retention Funnel":
     
     render_view_banner(
         title="🔄 Donor Lifecycle & Retention Funnel",
-        objective="Tracks constituent migration dynamics across the giving lifecycle—measuring consecutive renewal, attrition prevention (LYBUNT), lapsed reactivation, and first-time donor acquisition.",
-        visualizations=[
-            "4 Lifecycle KPIs: Consecutive retention, lapsed reactivation, acquisition, monthly sustainers",
-            "Plot 1: Multi-stage Sankey donor migration diagram mapping FY25 donor status to FY26 outcomes",
-            "Plot 2: Consecutive Retention Rate compared across graduation cohorts",
-            "Plot 3: Lapsed Reactivation Rate by primary solicitation channel",
-            "Plot 4: Prior Giving Frequency vs. FY26 Renewal Rate demonstrating donor habituation"
-        ]
+        objective="Tracks constituent migration dynamics across the giving lifecycle—measuring consecutive renewal, attrition prevention (LYBUNT), lapsed reactivation, and first-time donor acquisition."
     )
     
     gave_prior_pool = (filtered_df['Gave_Prior'] == 1) & (filtered_df['Donated_FY25'] == 0)
@@ -1216,7 +1229,7 @@ elif selected_module == "🔄 Donor Lifecycle & Retention Funnel":
         with st.container(border=True):
             st.subheader(
                 "Donor Migration Flow (FY25 ➔ FY26)",
-                help="Maps the movement of constituents from their FY25 giving status into FY26 outcomes using a multi-node Sankey diagram. Visualizes consecutive renewal, lapsed non-donors (LYBUNT), reactivated prior givers, and newly acquired first-time donors."
+                help="About: Visualizes constituent movement from FY25 giving status into FY26 outcomes.\n\nHow to Read: Flow ribbon widths represent constituent volume transitioning into retained, lapsed, reactivated, or new donor states."
             )
             lybunt = ((filtered_df['Donated_FY25'] == 1) & (filtered_df['Donated_FY26'] == 0)).sum()
             fig_sankey = go.Figure(go.Sankey(
@@ -1246,7 +1259,7 @@ elif selected_module == "🔄 Donor Lifecycle & Retention Funnel":
         with st.container(border=True):
             st.subheader(
                 "Consecutive Retention by Graduation Cohort",
-                help="Compares repeat donor retention rates across graduation eras (Young Alumni, Mid-Career, and Senior Alumni). Illustrates how donor loyalty and renewing behaviors strengthen with affinity over time."
+                help="About: Compares repeat donor retention rates across Young, Mid-Career, and Senior alumni cohorts.\n\nHow to Read: Taller bars indicate cohorts with higher year-over-year giving renewal consistency."
             )
             cohort_ret = filtered_df[filtered_df['Donated_FY25'] == 1].groupby('Graduation_Cohort').agg(
                 FY25_Donors=('Constituent_ID', 'count'),
@@ -1272,7 +1285,7 @@ elif selected_module == "🔄 Donor Lifecycle & Retention Funnel":
         with st.container(border=True):
             st.subheader(
                 "Lapsed Reactivation Rate by Solicitation Channel",
-                help="Evaluates channel effectiveness at recovering prior donors who lapsed. Shows which outreach method (Direct Mail, Crowdfunding, Digital, Phone) achieves the highest reactivation conversion."
+                help="About: Evaluates how effectively each solicitation channel recovered previously lapsed donors in FY26.\n\nHow to Read: Higher percentage bars identify the most successful channels for winning back lapsed supporters."
             )
             lapsed_df = filtered_df[gave_prior_pool].groupby('Display_Channel').agg(
                 Lapsed_Total=('Constituent_ID', 'count'),
@@ -1296,7 +1309,7 @@ elif selected_module == "🔄 Donor Lifecycle & Retention Funnel":
         with st.container(border=True):
             st.subheader(
                 "Prior Giving History vs. FY26 Renewal Rate",
-                help="Demonstrates donor habituation by plotting renewal rates against historical gift counts prior to FY24. Shows that constituents with 3+ prior gifts have renewal rates exceeding 75%."
+                help="About: Analyzes the relationship between historical gift frequency and FY26 giving renewal rate.\n\nHow to Read: Rising bars demonstrate how prior giving habituation drives higher ongoing donor loyalty."
             )
             filtered_df['Prior_Gift_Bin'] = pd.cut(
                 filtered_df['Lifetime_Gift_Count_Prior_To_FY24'],
@@ -1329,14 +1342,7 @@ elif selected_module == "📈 Marketing Efficiency & Channels":
     
     render_view_banner(
         title="📈 Marketing Efficiency & Digital Funnel",
-        objective="Analyzes the economic efficiency of advancement marketing outreach, solicitation channel conversion efficacy, and the multi-step digital giving conversion funnel.",
-        visualizations=[
-            "4 Marketing KPIs: Cost per $ raised, marketing ROI multiplier, email open rate, GA4 web giving conversion",
-            "Plot 1: Channel Conversion Rate (%) comparing Crowdfunding, Direct Mail, Digital, and Phone",
-            "Plot 2: 5-Stage digital giving funnel from delivery and open to click, web visit, and completed gift",
-            "Plot 3: Marketing ROI Multiplier by channel evaluating revenue yield per dollar invested",
-            "Plot 4: Direct Mail & Phonathon Appeal Volume vs. Realized Donors"
-        ]
+        objective="Analyzes the economic efficiency of advancement marketing outreach, solicitation channel conversion efficacy, and the multi-step digital giving conversion funnel."
     )
     
     cpdr = (tot_cost / tot_rev_fy26) if tot_rev_fy26 > 0 else 0.0
@@ -1402,7 +1408,7 @@ elif selected_module == "📈 Marketing Efficiency & Channels":
         with st.container(border=True):
             st.subheader(
                 "Channel Conversion Rate (%)",
-                help="Evaluates the donor conversion efficiency of primary solicitation channels including Digital, Direct Mail, Phone, and Crowdfunding. Displays the percentage of contacted constituents in each channel who completed a financial gift in FY26."
+                help="About: Compares the donor conversion efficiency across primary solicitation channels.\n\nHow to Read: Taller bars highlight channels that convert contacted constituents into donors at higher rates."
             )
             chan_df = filtered_df.groupby('Display_Channel').agg(
                 Donors=('Gift_Count_FY26', lambda x: (x > 0).sum()),
@@ -1426,7 +1432,7 @@ elif selected_module == "📈 Marketing Efficiency & Channels":
         with st.container(border=True):
             st.subheader(
                 "Digital Giving Funnel",
-                help="Illustrates constituent drop-off across the 5-stage digital solicitation funnel from email delivery to gift completion. Displays the conversion progression through delivered emails, open rates, link clicks, website visits, and completed gifts."
+                help="About: Tracks constituent progression across the five stages of the digital solicitation funnel.\n\nHow to Read: Funnel narrowing shows drop-off between email delivery, opens, clicks, web visits, and completed gifts."
             )
             fig_fun = go.Figure(go.Funnel(
                 y=["Delivered Email", "Opened Email", "Clicked Link", "Visited Web", "Completed Gift"],
@@ -1454,7 +1460,7 @@ elif selected_module == "📈 Marketing Efficiency & Channels":
         with st.container(border=True):
             st.subheader(
                 "Marketing ROI Multiplier by Solicitation Channel",
-                help="Measures the financial revenue multiplier returned per direct marketing dollar spent across channels. Highlights the high-efficiency return of digital solicitation and Giving Day campaigns."
+                help="About: Measures the philanthropic dollar return generated per marketing dollar invested in each channel.\n\nHow to Read: Higher multiplier bars represent channels delivering greater financial return relative to outreach cost."
             )
             chan_roi = filtered_df.groupby('Display_Channel').agg(
                 Revenue=('Giving_Amount_FY26', 'sum'),
@@ -1478,7 +1484,7 @@ elif selected_module == "📈 Marketing Efficiency & Channels":
         with st.container(border=True):
             st.subheader(
                 "Direct Mail & Phonathon Appeal Volume vs. Donors",
-                help="Compares the gross solicitation outreach volume (letters mailed and phonathon calls completed) to active donors acquired through direct outreach programs."
+                help="About: Compares total outreach volume (letters mailed and calls completed) against resulting donors.\n\nHow to Read: Side-by-side bars compare outreach investment scale with realized donor counts for each channel."
             )
             dm_pieces = filtered_df['Direct_Mail_Pieces_Sent_FY26'].sum()
             dm_donors = filtered_df[filtered_df['Primary_Solicitation_Channel_FY26'] == 'Direct_Mail_Letter']['Donated_FY26'].sum()
@@ -1515,12 +1521,11 @@ elif selected_module == "🤝 CASE 4-Pillar Engagement (AEM)":
     render_view_banner(
         title="🤝 CASE 4-Pillar Engagement (AEM)",
         objective="Operationalizes the Council for Advancement and Support of Education (CASE) Alumni Engagement Metrics across Philanthropic, Experiential, Volunteer, and Communication modes to measure overall constituent relationship depth.",
-        visualizations=[
-            "4 CASE Engagement KPIs: Event attendance rate, ticket show rate, 2+ pillar multi-mode rate, active volunteers",
-            "Plot 1: CASE multi-pillar engagement lift showing exponential giving rate increases by pillar count",
-            "Plot 2: Homecoming reunion milestone spikes highlighting alumni engagement across graduating classes",
-            "Plot 3: Experiential Pillar: Event registration volume compared to actual attendance show rate",
-            "Plot 4: Volunteer leadership philanthropic impact comparing active volunteers vs. non-volunteers"
+        pillars=[
+            {"name": "Philanthropic", "icon": "🎁", "desc": "Monetary gifts, annual pledges, and recurring monthly donations."},
+            {"name": "Experiential", "icon": "🎟️", "desc": "In-person & virtual event attendance, reunions, and webinars."},
+            {"name": "Volunteer", "icon": "🤝", "desc": "Alumni boards, student mentoring, advisory panels, and committee leadership."},
+            {"name": "Communication", "icon": "📬", "desc": "Opening digital university appeals, newsletters, and McDill Connect logins."}
         ]
     )
     
@@ -1587,7 +1592,7 @@ elif selected_module == "🤝 CASE 4-Pillar Engagement (AEM)":
         with st.container(border=True):
             st.subheader(
                 "CASE Engagement Modes vs. Giving Rate (%)",
-                help="Demonstrates the empirical lift law between non-financial alumni engagement depth and financial giving propensity. Displays how alumni participating in multiple CASE pillars exhibit up to 9x higher donor participation rates."
+                help="About: Demonstrates the relationship between the number of active CASE engagement pillars and donor giving rate.\n\nHow to Read: Ascending bars illustrate how multi-modal engagement exponentially lifts financial participation."
             )
             aem_df = filtered_df.groupby('CASE_Pillar_Count').agg(
                 Donors=('Gift_Count_FY26', lambda x: (x > 0).sum()),
@@ -1610,17 +1615,40 @@ elif selected_module == "🤝 CASE 4-Pillar Engagement (AEM)":
     with v5_r1_c2:
         with st.container(border=True):
             st.subheader(
-                "Homecoming Milestone Spikes",
-                help="Tracks Homecoming and reunion weekend attendance rates as a function of years since graduation. Displays cyclical participation peaks corresponding to 5, 10, 20, and 25-year milestone reunion cohorts."
+                "CASE 4-Pillar Constituent Participation Breakdown",
+                help="About: Compares the percentage and count of addressable alumni active within each of the 4 CASE engagement pillars.\n\nHow to Read: Longer bars indicate broader constituent penetration, from broad communication down to focused volunteerism."
             )
-            years = filtered_df.groupby('Years_Since_Grad')['Attended_Homecoming_FY26'].mean().reset_index()
-            years['Rate'] = years['Attended_Homecoming_FY26'] * 100
-            fig_home = px.line(years, x='Years_Since_Grad', y='Rate', markers=True)
-            fig_home.update_traces(line=dict(color='#F43F5E', width=2.5), marker=dict(size=5, color='#F43F5E'))
-            fig_home.update_yaxes(title_text='Homecoming Rate (%)')
-            fig_home.update_xaxes(title_text='Years Since Graduation')
-            apply_dark_theme(fig_home, height=270)
-            st.plotly_chart(fig_home, use_container_width=True)
+            p_comm = (filtered_df['CASE_Communication'] == 1).sum()
+            p_exp = (filtered_df['CASE_Experiential'] == 1).sum()
+            p_phil = (filtered_df['CASE_Philanthropic'] == 1).sum()
+            p_vol = (filtered_df['CASE_Volunteer'] == 1).sum()
+            
+            pillar_df = pd.DataFrame({
+                'Pillar': ['Communication', 'Experiential', 'Philanthropic', 'Volunteer'],
+                'Count': [p_comm, p_exp, p_phil, p_vol],
+                'Rate': [p_comm / n_filtered * 100, p_exp / n_filtered * 100, p_phil / n_filtered * 100, p_vol / n_filtered * 100]
+            }).sort_values('Rate', ascending=True)
+            
+            fig_pillar = px.bar(
+                pillar_df,
+                x='Rate',
+                y='Pillar',
+                orientation='h',
+                color='Pillar',
+                color_discrete_map={
+                    'Communication': '#38BDF8',
+                    'Experiential': '#60A5FA',
+                    'Philanthropic': '#34D399',
+                    'Volunteer': '#A78BFA'
+                },
+                text=pillar_df.apply(lambda r: f"{r['Rate']:.1f}% ({int(r['Count']):,})", axis=1)
+            )
+            fig_pillar.update_traces(textposition='outside')
+            fig_pillar.update_layout(showlegend=False)
+            fig_pillar.update_yaxes(title_text='')
+            fig_pillar.update_xaxes(title_text='Alumni Participation Rate (%)')
+            apply_dark_theme(fig_pillar, height=270)
+            st.plotly_chart(fig_pillar, use_container_width=True)
 
     v5_r2_c1, v5_r2_c2 = st.columns(2)
     
@@ -1628,7 +1656,7 @@ elif selected_module == "🤝 CASE 4-Pillar Engagement (AEM)":
         with st.container(border=True):
             st.subheader(
                 "Experiential Pillar: Registration vs. Show Rate",
-                help="Compares the total volume of event registrations against realized event attendees across graduation cohorts. Highlights that senior alumni achieve show rates upwards of 68%."
+                help="About: Compares event registration volume against realized attendees across graduation cohorts.\n\nHow to Read: Grouped bars show attendance conversion efficiency; smaller gaps between bars reflect higher show rates."
             )
             event_cohort = filtered_df.groupby('Graduation_Cohort').agg(
                 Registrations=('Events_Registered_FY26', 'sum'),
@@ -1655,7 +1683,7 @@ elif selected_module == "🤝 CASE 4-Pillar Engagement (AEM)":
         with st.container(border=True):
             st.subheader(
                 "Volunteer Leadership Philanthropic Impact",
-                help="Compares financial giving participation rates between constituents who actively volunteer (boards, mentors, committee members) versus non-volunteers. Demonstrates that volunteers are 4x more likely to contribute."
+                help="About: Evaluates giving participation rates among active volunteers compared to non-volunteers.\n\nHow to Read: Compare bar heights to see the giving rate multiple associated with volunteer leadership."
             )
             vol_impact = filtered_df.groupby('Is_Active_Volunteer_FY26').agg(
                 Alumni=('Constituent_ID', 'count'),
@@ -1684,14 +1712,7 @@ elif selected_module == "💎 Prospect Capacity & Faculty Intelligence":
     
     render_view_banner(
         title="💎 Prospect Capacity & Faculty Intelligence",
-        objective="Leverages wealth screening capacity ratings and academic faculty commitments to prioritize high-capacity major gift cultivation and optimize development officer pipeline coverage.",
-        visualizations=[
-            "3 Major Gift KPIs: Top tier giving ($100k+ and $25k-$99k), Tier 1 conversion %, Tier 2 conversion %",
-            "Plot 1: Faculty Total Commitments ($ CAD) league table across all academic units",
-            "Plot 2: Wealth Capacity Tier Conversion Rates (%) across screening brackets",
-            "Plot 3: Wealth Screening Matrix Summary Table with prospect counts and funds raised",
-            "Plot 4: Major Gift Pipeline ($25k+ Capacity) by Academic Faculty"
-        ]
+        objective="Leverages wealth screening capacity ratings and academic faculty commitments to prioritize high-capacity major gift cultivation and optimize development officer pipeline coverage."
     )
     
     t1_t2_rev = filtered_df[filtered_df['Wealth_Screening_Rating'].isin(['Tier 1: $100k+', 'Tier 2: $25k-$99k'])]['Giving_Amount_FY26'].sum()
@@ -1745,7 +1766,7 @@ elif selected_module == "💎 Prospect Capacity & Faculty Intelligence":
         with st.container(border=True):
             st.subheader(
                 "Faculty Commitments ($ CAD)",
-                help="Displays total philanthropic commitments secured in FY26 broken down by academic division and faculty. Highlights top performing faculties and comparative funding distribution across the university."
+                help="About: Displays total philanthropic commitments raised in FY26 across academic faculties.\n\nHow to Read: Longer bars identify faculties generating the highest cumulative philanthropic revenues."
             )
             fac_league = filtered_df.groupby('Primary_Faculty')['Giving_Amount_FY26'].sum().reset_index().sort_values(by='Giving_Amount_FY26', ascending=True)
             fig_fl = px.bar(
@@ -1766,7 +1787,7 @@ elif selected_module == "💎 Prospect Capacity & Faculty Intelligence":
         with st.container(border=True):
             st.subheader(
                 "Wealth Capacity Tier Conversion Rates (%)",
-                help="Compares donor conversion rates across wealth capacity tiers. Highlights high conversion among screened major gift prospects (Tier 1 & Tier 2) compared to grassroots tiers."
+                help="About: Measures donor giving participation rates across estimated wealth capacity screening tiers.\n\nHow to Read: Compare bar heights to assess how solicitation conversion scales with prospect financial capacity."
             )
             w_order = ['Tier 1: $100k+', 'Tier 2: $25k-$99k', 'Tier 3: $5k-$24k', 'Tier 4: $1k-$4.9k', 'Tier 5: Under $1k', 'Unrated']
             w_conv_df = filtered_df.groupby('Wealth_Screening_Rating').agg(
@@ -1793,7 +1814,7 @@ elif selected_module == "💎 Prospect Capacity & Faculty Intelligence":
         with st.container(border=True):
             st.subheader(
                 "Wealth Screening Matrix",
-                help="Cross-tabulates estimated wealth capacity tiers with actual donor conversion rates and philanthropic revenue. Displays addressable prospect pool sizes, giving participation rates, and total dollars raised per capacity bracket."
+                help="About: Cross-tabulates prospect counts, donor participation rates, and funds raised per wealth tier.\n\nHow to Read: Review rows to evaluate pipeline volume, conversion rates, and revenue yield across capacity brackets."
             )
             w_matrix = filtered_df.groupby('Wealth_Screening_Rating').agg(
                 Alumni=('Constituent_ID', 'count'),
@@ -1808,7 +1829,7 @@ elif selected_module == "💎 Prospect Capacity & Faculty Intelligence":
         with st.container(border=True):
             st.subheader(
                 "Major Gift Pipeline ($25k+ Capacity) by Faculty",
-                help="Identifies the volume of rated major and principal gift prospects (Tier 1 & Tier 2) associated with each academic division. Guides development officer portfolio deployment."
+                help="About: Identifies the count of rated major gift prospects ($25k+ capacity) affiliated with each academic faculty.\n\nHow to Read: Longer bars indicate faculties with larger major gift pipelines for development officer prioritization."
             )
             mg_fac = filtered_df[filtered_df['Wealth_Screening_Rating'].isin(['Tier 1: $100k+', 'Tier 2: $25k-$99k'])].groupby('Primary_Faculty').size().reset_index(name='MG_Prospects').sort_values('MG_Prospects', ascending=True)
             fig_mg = px.bar(
