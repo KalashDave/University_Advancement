@@ -55,7 +55,7 @@ st.markdown("""
         border: 1px solid #334155 !important;
         border-radius: 12px !important;
         box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25) !important;
-        padding: 8px !important;
+        padding: 6px !important;
     }
     
     [data-testid="stVerticalBlockBorderWrapper"]:hover {
@@ -78,15 +78,29 @@ st.markdown("""
     
     /* Ultra-Crisp Metric Typography */
     [data-testid="stMetric"] {
-        padding: 8px 10px !important;
+        padding: 5px 4px !important;
     }
     
     [data-testid="stMetricLabel"] {
-        font-size: 11px !important;
+        font-size: 10px !important;
         font-weight: 700 !important;
         color: #94A3B8 !important;
         text-transform: uppercase !important;
-        letter-spacing: 0.05em !important;
+        letter-spacing: 0.01em !important;
+        white-space: nowrap !important;
+    }
+    
+    [data-testid="stMetricLabel"] > div:first-child {
+        overflow: visible !important;
+    }
+    
+    [data-testid="stMetricLabel"] p {
+        font-size: 10px !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.01em !important;
+        overflow: visible !important;
+        white-space: nowrap !important;
+        margin: 0 !important;
     }
     
     [data-testid="stMetricValue"] {
@@ -104,6 +118,11 @@ st.markdown("""
     /* Tooltip / Help Target Icon Styling */
     [data-testid="stTooltipHoverTarget"] {
         color: #94A3B8 !important;
+        margin-left: 2px !important;
+    }
+    [data-testid="stTooltipHoverTarget"] svg {
+        width: 13px !important;
+        height: 13px !important;
     }
     [data-testid="stTooltipHoverTarget"]:hover {
         color: #38BDF8 !important;
@@ -564,15 +583,10 @@ roi_mult = (tot_rev_fy26 / tot_cost) if tot_cost > 0 else 0.0
 # =============================================================================
 title_html = """<div style="text-align: center; margin: 16px auto 20px auto; padding: 12px 0 6px 0;">
 <div style="font-size: 60px; font-weight: 900; color: #FFFFFF; letter-spacing: -0.035em; line-height: 1.1; margin-bottom: 12px;">
-McDill University Advancement Intelligence
+McDill University Advancement Analytics
 </div>
 <div style="font-size: 15px; color: #94A3B8; line-height: 1.5; max-width: 860px; margin: 0 auto;">
 An enterprise institutional advancement intelligence platform providing strategic decision-support for university leadership, tracking multi-year philanthropic revenue velocity, alumni donor lifecycle migration, marketing campaign ROI, and CASE 4-pillar engagement.
-</div>
-<div style="margin-top: 12px; font-size: 14px;">
-👉 <a href="#dataset-snapshot" style="color: #38BDF8; font-weight: 600; text-decoration: underline; text-underline-offset: 4px;">
-Want to inspect the underlying CRM dataset and column dictionary? Click here to view the data snapshot & schema ↓
-</a>
 </div>
 </div>"""
 
@@ -1851,4 +1865,4 @@ elif selected_module == "💎 Prospect Capacity & Faculty Intelligence":
 # 6. MINIMAL FOOTER
 # =============================================================================
 st.markdown("---")
-st.caption("McDill University Advancement Analytics • High-Contrast Executive Dashboard • FY2026 Reporting Year")
+st.caption("McDill University Advancement Analytics • FY2026 Reporting Year")
