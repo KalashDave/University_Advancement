@@ -1,9 +1,9 @@
 """
 McDill University Advancement - Executive Analytics & CASE Intelligence Portal
 File: app.py
-Description: Production-grade Streamlit application for Higher Education Advancement
-             incorporating Power BI-style Executive Dashboard, 6 Pillars, 15 CASE KPIs,
-             Interactive Visualizations, and Leakage-Free Predictive ML Propensity Modeling.
+Description: Production-grade Higher Education Advancement Executive Dashboard
+             incorporating Power BI-style visual cards, interactive tooltips,
+             and polished high-contrast visualizations across 5 strategic CASE pillars.
 """
 
 import streamlit as st
@@ -11,13 +11,10 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import roc_auc_score, accuracy_score
 import os
 
 # =============================================================================
-# 1. PAGE CONFIGURATION & MCDILL DESIGN SYSTEM (POWER BI AESTHETICS)
+# 1. PAGE CONFIGURATION & MCDILL DESIGN SYSTEM
 # =============================================================================
 st.set_page_config(
     page_title="McDill Advancement Analytics | FY26",
@@ -26,7 +23,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom McDill Visual Identity & Power BI Dashboard Styling
+# Custom McDill Visual Identity & Modern Power BI Dashboard Styling
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
@@ -36,7 +33,7 @@ st.markdown("""
         color: #0F172A;
     }
     
-    /* Power BI Clean Canvas Background */
+    /* Clean Canvas Background */
     .stApp {
         background-color: #F8FAFC;
     }
@@ -46,10 +43,10 @@ st.markdown("""
         background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
         border-top: 5px solid #ED1B2F;
         border-radius: 12px;
-        padding: 20px 28px;
-        margin-bottom: 18px;
+        padding: 22px 30px;
+        margin-bottom: 16px;
         color: #FFFFFF;
-        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -72,20 +69,14 @@ st.markdown("""
         font-weight: 400;
     }
     
-    .executive-header-right {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-    }
-    
     .live-badge {
         display: inline-flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
         background: rgba(237, 27, 47, 0.15);
         border: 1px solid rgba(237, 27, 47, 0.4);
         color: #FECACA;
-        padding: 5px 12px;
+        padding: 6px 14px;
         border-radius: 20px;
         font-size: 12px;
         font-weight: 600;
@@ -104,8 +95,8 @@ st.markdown("""
     .filter-summary-bar {
         background: #FFFFFF;
         border: 1px solid #E2E8F0;
-        border-radius: 8px;
-        padding: 10px 18px;
+        border-radius: 10px;
+        padding: 12px 20px;
         margin-bottom: 20px;
         display: flex;
         align-items: center;
@@ -115,7 +106,7 @@ st.markdown("""
         font-size: 13px;
         font-weight: 500;
         color: #475569;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.02);
     }
     
     .filter-stat-pill {
@@ -123,7 +114,7 @@ st.markdown("""
         align-items: center;
         background: #F1F5F9;
         color: #0F172A;
-        padding: 3px 10px;
+        padding: 4px 10px;
         border-radius: 6px;
         font-weight: 700;
         margin-left: 6px;
@@ -135,7 +126,7 @@ st.markdown("""
     }
     
     /* =========================================================================
-       CLEAN KPI CARDS WITH FLOATING TOOLTIP
+       CLEAN KPI CARDS WITH HOVER TOOLTIPS
        ========================================================================= */
     .kpi-card {
         background: #FFFFFF;
@@ -143,14 +134,14 @@ st.markdown("""
         border-top: 4px solid #ED1B2F;
         border-radius: 10px;
         padding: 16px 18px;
-        box-shadow: 0 2px 4px rgba(15, 23, 42, 0.04);
+        box-shadow: 0 2px 4px rgba(15, 23, 42, 0.03);
         position: relative;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        min-height: 124px;
+        min-height: 125px;
         transition: transform 0.15s ease, box-shadow 0.15s ease;
-        margin-bottom: 12px;
+        margin-bottom: 14px;
     }
     
     .kpi-card:hover {
@@ -193,7 +184,7 @@ st.markdown("""
     .pillar-badge.green { background: #D1FAE5; color: #047857; }
     .pillar-badge.purple { background: #EDE9FE; color: #6D28D9; }
     
-    /* Tooltip Hover at Top Right Corner */
+    /* Interactive Tooltip in Top Right Corner */
     .kpi-tooltip-wrapper {
         position: relative;
         display: inline-block;
@@ -201,8 +192,8 @@ st.markdown("""
     }
     
     .kpi-info-btn {
-        width: 19px;
-        height: 19px;
+        width: 20px;
+        height: 20px;
         border-radius: 50%;
         background: #F1F5F9;
         color: #64748B;
@@ -223,12 +214,12 @@ st.markdown("""
     .kpi-tooltip-content {
         visibility: hidden;
         opacity: 0;
-        width: 250px;
+        width: 260px;
         background: #0F172A;
         color: #F8FAFC;
         text-align: left;
         border-radius: 8px;
-        padding: 10px 12px;
+        padding: 10px 14px;
         font-size: 11px;
         line-height: 1.45;
         position: absolute;
@@ -269,7 +260,7 @@ st.markdown("""
         align-items: center;
         font-size: 11px;
         font-weight: 700;
-        padding: 2px 7px;
+        padding: 2px 8px;
         border-radius: 9999px;
     }
     
@@ -277,43 +268,25 @@ st.markdown("""
     .delta-pill.warning { background: #FEF3C7; color: #92400E; }
     .delta-pill.neutral { background: #F1F5F9; color: #475569; }
     
-    /* Modern Power BI Card Containers for Visuals */
-    .pbi-card {
-        background: #FFFFFF;
-        border: 1px solid #E2E8F0;
-        border-radius: 10px;
-        padding: 16px 18px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.03);
-        margin-bottom: 20px;
-    }
-    
-    .pbi-card-title {
-        font-size: 14px;
-        font-weight: 700;
-        color: #0F172A;
-        margin-bottom: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-    
-    /* Modern Tabs Styling */
+    /* =========================================================================
+       VISUALLY IMPRESSIVE TABS & CHART CONTAINERS
+       ========================================================================= */
     .stTabs [data-baseweb="tab-list"] {
         gap: 6px;
         background-color: #FFFFFF;
         border: 1px solid #E2E8F0;
-        border-radius: 10px;
+        border-radius: 12px;
         padding: 6px 8px;
-        margin-bottom: 20px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        margin-bottom: 24px;
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03);
     }
     
     .stTabs [data-baseweb="tab"] {
         font-size: 13px;
         font-weight: 600;
         color: #475569;
-        padding: 8px 14px;
-        border-radius: 6px;
+        padding: 9px 16px;
+        border-radius: 8px;
         border: none;
         background: transparent;
         transition: all 0.15s ease;
@@ -323,9 +296,56 @@ st.markdown("""
         color: #ED1B2F !important;
         background-color: #FEF2F2 !important;
         font-weight: 700 !important;
+        box-shadow: 0 1px 3px rgba(237, 27, 47, 0.12);
     }
     
-    /* Strategic Executive Callout Cards */
+    /* Chart Enclosing Cards */
+    .chart-card-wrapper {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 20px 22px 14px 22px;
+        margin-bottom: 22px;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.02);
+    }
+    
+    .chart-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 12px;
+        border-bottom: 1px solid #F1F5F9;
+        padding-bottom: 10px;
+    }
+    
+    .chart-title-text {
+        font-size: 14px;
+        font-weight: 700;
+        color: #0F172A;
+        margin: 0 0 3px 0;
+    }
+    
+    .chart-subtitle-text {
+        font-size: 11px;
+        color: #64748B;
+        margin: 0;
+    }
+    
+    .chart-badge-pill {
+        display: inline-flex;
+        align-items: center;
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        color: #475569;
+        padding: 3px 8px;
+        border-radius: 6px;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    
+    /* Strategic Overview Highlight Cards */
     .exec-brief-card {
         background: #FFFFFF;
         border: 1px solid #E2E8F0;
@@ -352,69 +372,31 @@ st.markdown("""
         line-height: 1.4;
         margin: 0;
     }
-
+    
     /* Section Subheaders */
     .section-header {
         font-size: 16px;
         font-weight: 700;
         color: #0F172A;
-        margin: 18px 0 10px 0;
+        margin: 18px 0 12px 0;
         display: flex;
         align-items: center;
         gap: 8px;
     }
     
-    /* Streamlit footer hide */
     footer {visibility: hidden;}
 </style>
 """, unsafe_allow_html=True)
 
 
 # =============================================================================
-# 2. DATA CACHING & ADVANCED FEATURE ENGINEERING (MCDILL ADVANCEMENT CRM)
+# 2. DATA CACHING & ADVANCED FEATURE ENGINEERING
 # =============================================================================
-@st.cache_resource(show_spinner=False)
-def train_advancement_propensity_model(df_input: pd.DataFrame):
-    """
-    Trains a leakage-free Random Forest classifier to predict FY26 giving propensity.
-    Strictly excludes current-year gift amounts and dates.
-    """
-    ml_features = [
-        'Class_Year', 'Birth_Year',
-        'Lifetime_Gift_Count_Prior_To_FY24', 'Lifetime_Giving_Amount_Prior_To_FY24',
-        'Gift_Count_FY24', 'Giving_Amount_FY24',
-        'Gift_Count_FY25', 'Giving_Amount_FY25',
-        'Lifetime_Events_Attended', 'Events_Registered_FY26', 'Events_Attended_FY26',
-        'Attended_Homecoming_FY26', 'Is_Active_Volunteer_FY26', 'Volunteer_Hours_Logged_FY26',
-        'Alumni_Survey_Completed_FY26', 'Emails_Delivered_FY26', 'Emails_Opened_FY26',
-        'Emails_Clicked_FY26', 'GA4_Giving_Page_Views_FY26',
-        'McGill_Connect_Registered', 'McGill_Connect_Logins_FY26'
-    ]
-    cat_features = ['Primary_Faculty', 'Primary_Degree_Type', 'Wealth_Screening_Rating', 'Preferred_Language']
-    
-    X_df = pd.get_dummies(df_input[ml_features + cat_features], drop_first=True)
-    y = (df_input['Gift_Count_FY26'] > 0).astype(int)
-    
-    X_tr, X_te, y_tr, y_te = train_test_split(X_df, y, test_size=0.2, random_state=42, stratify=y)
-    
-    clf = RandomForestClassifier(n_estimators=100, max_depth=10, random_state=42, n_jobs=-1)
-    clf.fit(X_tr, y_tr)
-    
-    y_prob = clf.predict_proba(X_te)[:, 1]
-    auc = roc_auc_score(y_te, y_prob)
-    acc = accuracy_score(y_te, (y_prob >= 0.5).astype(int))
-    
-    all_probs = clf.predict_proba(X_df)[:, 1]
-    importances = pd.Series(clf.feature_importances_, index=X_df.columns).sort_values(ascending=False)
-    
-    return clf, X_df.columns.tolist(), auc, acc, importances, all_probs
-
-
 @st.cache_data(show_spinner=False)
 def load_and_preprocess_advancement_data():
     """
     Loads raw constituent extract, creates derived lifecycle segments, CASE AEM metrics,
-    and attaches leakage-free propensity scores upfront.
+    and structured gift brackets.
     """
     csv_path = "mcgill_advancement_raw_crm.csv"
     if not os.path.exists(csv_path):
@@ -481,12 +463,29 @@ def load_and_preprocess_advancement_data():
         df['CASE_Communication']
     )
     
-    # Alias designation for display consistency
+    # 5. Gift Size Tier Brackets (for Pareto visual clarity)
+    conditions_tier = [
+        (df['Giving_Amount_FY26'] >= 10000),
+        (df['Giving_Amount_FY26'] >= 2500) & (df['Giving_Amount_FY26'] < 10000),
+        (df['Giving_Amount_FY26'] >= 500) & (df['Giving_Amount_FY26'] < 2500),
+        (df['Giving_Amount_FY26'] >= 100) & (df['Giving_Amount_FY26'] < 500),
+        (df['Giving_Amount_FY26'] > 0) & (df['Giving_Amount_FY26'] < 100)
+    ]
+    choices_tier = [
+        'Principal ($10k+)',
+        'Major ($2.5k–$9.9k)',
+        'Leadership ($500–$2.4k)',
+        'Centennial ($100–$499)',
+        'Grassroots (<$100)'
+    ]
+    df['Gift_Size_Tier'] = np.select(conditions_tier, choices_tier, default='Non-Donor')
+    
+    # Designation display alias
     df['Last_Gift_Designation'] = df['Last_Gift_Designation'].replace({
         'The McGill Fund (Unrestricted)': 'The McDill Fund (Unrestricted)'
     })
     
-    # Alias solicitation channel for display consistency
+    # Channel display alias
     df['Display_Channel'] = df['Primary_Solicitation_Channel_FY26'].replace({
         'Crowdfunding_McGill24': 'Crowdfunding_McDill24'
     })
@@ -494,24 +493,17 @@ def load_and_preprocess_advancement_data():
     return df
 
 
-# Load data
-df_raw = load_and_preprocess_advancement_data()
-
-# Pre-train and attach propensity predictions upfront so all slices always have Predicted_Propensity_Score!
-rf_model, ml_feature_names, test_auc, test_acc, feat_importances, full_dataset_probs = train_advancement_propensity_model(df_raw)
-df_master = df_raw.copy()
-df_master['Predicted_Propensity_Score'] = full_dataset_probs
+df_master = load_and_preprocess_advancement_data()
 
 
 # =============================================================================
-# 3. REUSABLE KPI CARD HELPER WITH INTERACTIVE TOOLTIP
+# 3. REUSABLE KPI CARD & PLOTLY THEMING HELPERS
 # =============================================================================
 def render_kpi_card(title: str, value: str, pillar_badge: str, benchmark_text: str,
                     benchmark_status: str = "good", badge_color: str = "red",
                     tooltip_def: str = "", tooltip_bench: str = "", tooltip_impact: str = ""):
     """
     Renders a clean Power BI-style KPI card with an interactive tooltip at the top-right corner.
-    Keeps the card face minimal and uncluttered while retaining deep analytical rigor on hover.
     """
     html_code = f"""
     <div class="kpi-card">
@@ -543,27 +535,41 @@ def render_kpi_card(title: str, value: str, pillar_badge: str, benchmark_text: s
     st.markdown(html_code, unsafe_allow_html=True)
 
 
-def apply_powerbi_theme(fig, height=350):
+def render_chart_card(title: str, subtitle: str, badge_text: str = ""):
+    """Renders the top header for an enclosed chart card."""
+    badge_html = f'<span class="chart-badge-pill">{badge_text}</span>' if badge_text else ''
+    st.markdown(f"""
+    <div class="chart-card-header">
+        <div>
+            <div class="chart-title-text">{title}</div>
+            <div class="chart-subtitle-text">{subtitle}</div>
+        </div>
+        {badge_html}
+    </div>
+    """, unsafe_allow_html=True)
+
+
+def apply_custom_chart_theme(fig, height=350):
     """
-    Standardizes Plotly figures with high-contrast, publication-grade Power BI aesthetics.
-    Ensures numbers, ticks, and labels are crisp and fully legible.
+    Applies high-contrast, modern publication-grade styling to all Plotly figures.
     """
     fig.update_layout(
-        font=dict(family="Inter, sans-serif", size=12, color="#1E293B"),
+        font=dict(family="Inter, -apple-system, sans-serif", size=12, color="#1E293B"),
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
         height=height,
-        margin=dict(l=45, r=35, t=30, b=40),
+        margin=dict(l=45, r=30, t=25, b=35),
         hovermode="closest",
         hoverlabel=dict(
             bgcolor="#0F172A",
             font_size=12,
             font_color="#FFFFFF",
-            font_family="Inter, sans-serif"
+            font_family="Inter, sans-serif",
+            bordercolor="#334155"
         )
     )
-    fig.update_xaxes(showgrid=True, gridcolor="#F1F5F9", tickfont=dict(size=11, color="#475569"))
-    fig.update_yaxes(showgrid=True, gridcolor="#F1F5F9", tickfont=dict(size=11, color="#475569"))
+    fig.update_xaxes(showgrid=True, gridcolor="#F1F5F9", tickfont=dict(size=11, color="#64748B"))
+    fig.update_yaxes(showgrid=True, gridcolor="#F1F5F9", tickfont=dict(size=11, color="#64748B"))
     return fig
 
 
@@ -572,21 +578,21 @@ def apply_powerbi_theme(fig, height=350):
 # =============================================================================
 with st.sidebar:
     st.markdown("""
-    <div style="padding: 14px 0 16px 0; border-bottom: 2px solid #F1F5F9; margin-bottom: 16px;">
+    <div style="padding: 12px 0 16px 0; border-bottom: 2px solid #F1F5F9; margin-bottom: 16px;">
         <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="font-size: 32px; background: #FEF2F2; padding: 6px 10px; border-radius: 10px; border: 1px solid #FEE2E2;">🎓</div>
+            <div style="font-size: 30px; background: #FEF2F2; padding: 6px 10px; border-radius: 10px; border: 1px solid #FEE2E2;">🎓</div>
             <div>
                 <div style="font-size: 17px; font-weight: 800; color: #ED1B2F; letter-spacing: -0.01em;">McDill University</div>
                 <div style="font-size: 12px; font-weight: 600; color: #64748B;">Advancement Analytics</div>
             </div>
         </div>
         <div style="margin-top: 10px; background: #F8FAFC; border: 1px solid #E2E8F0; padding: 6px 10px; border-radius: 6px; font-size: 11px; color: #475569;">
-            <b>Universe:</b> 30,000 Verified Alumni Records
+            <b>Universe:</b> 30,000 Verified Records
         </div>
     </div>
     """, unsafe_allow_html=True)
     
-    st.markdown("<div style='font-size: 12px; font-weight: 700; text-transform: uppercase; color: #94A3B8; letter-spacing: 0.05em; margin-bottom: 8px;'>🎯 Slicers & Scope</div>", unsafe_allow_html=True)
+    st.markdown("<div style='font-size: 11px; font-weight: 700; text-transform: uppercase; color: #94A3B8; letter-spacing: 0.05em; margin-bottom: 8px;'>🎯 Slicers & Scope</div>", unsafe_allow_html=True)
     
     # 1. Academic Faculty
     with st.expander("🏛️ Academic Faculty", expanded=True):
@@ -651,11 +657,11 @@ with st.sidebar:
         selected_lang = st.radio("Preferred Language", options=['All', 'EN', 'FR'], horizontal=True)
     
     st.markdown("<div style='margin-top: 14px;'></div>", unsafe_allow_html=True)
-    if st.button("🔄 Reset Slicers to Default", use_container_width=True):
+    if st.button("🔄 Reset All Filters", use_container_width=True):
         st.rerun()
 
 
-# Apply Sidebar Filters
+# Apply Filters
 filtered_df = df_master.copy()
 filtered_df = filtered_df[filtered_df['Primary_Faculty'].isin(selected_faculties)]
 filtered_df = filtered_df[(filtered_df['Class_Year'] >= class_year_range[0]) & (filtered_df['Class_Year'] <= class_year_range[1])]
@@ -667,11 +673,11 @@ if selected_lang != 'All':
 
 n_filtered = len(filtered_df)
 if n_filtered == 0:
-    st.warning("⚠️ No constituent records match the current slicer criteria. Please adjust your filters.")
+    st.warning("⚠️ No constituent records match the current filter criteria. Please adjust your sidebar slicers.")
     st.stop()
 
 
-# Core Aggregations for Executive Summary
+# Core Aggregations
 tot_rev_fy26 = filtered_df['Giving_Amount_FY26'].sum()
 tot_rev_fy25 = filtered_df['Giving_Amount_FY25'].sum()
 tot_rev_fy24 = filtered_df['Giving_Amount_FY24'].sum()
@@ -687,7 +693,7 @@ yoy_rev_pct = ((tot_rev_fy26 - tot_rev_fy25) / tot_rev_fy25 * 100) if tot_rev_fy
 
 
 # =============================================================================
-# 5. TOP CORPORATE EXECUTIVE BANNER & CONTEXT SLICER BAR
+# 5. TOP CORPORATE EXECUTIVE BANNER & SLICER CONTEXT
 # =============================================================================
 st.markdown(f"""
 <div class="executive-header">
@@ -720,7 +726,7 @@ st.markdown(f"""
         <span class="filter-stat-pill">{donors_fy26:,} Donors</span>
     </div>
     <div>
-        <span>Segment Mode:</span>
+        <span>Segment Scope:</span>
         <span class="filter-stat-pill">{'Full McDill Universe' if n_filtered == len(df_master) else 'Filtered Cohort Active'}</span>
     </div>
 </div>
@@ -728,21 +734,20 @@ st.markdown(f"""
 
 
 # =============================================================================
-# 6. TABBED PAGE ARCHITECTURE (EXECUTIVE LANDING + 6 STRATEGIC PILLARS)
+# 6. TABBED PAGE ARCHITECTURE (EXECUTIVE OVERVIEW + 5 STRATEGIC PILLARS)
 # =============================================================================
 tabs = st.tabs([
-    "📊 Executive Overview",
-    "🏛️ 1. Philanthropic Health & Revenue",
+    "📊 Overview",
+    "🏛️ 1. Philanthropic Health",
     "🔄 2. Donor Lifecycle & Retention",
-    "📈 3. Marketing & Digital Channels",
+    "📈 3. Marketing & Channels",
     "🤝 4. CASE 4-Pillar Engagement",
-    "💎 5. Prospect Capacity & Benchmarking",
-    "🤖 6. Predictive Propensity Simulator"
+    "💎 5. Prospect Capacity & Benchmarking"
 ])
 
 
 # =============================================================================
-# TAB 0: EXECUTIVE OVERVIEW (POWER BI REPORTING DASHBOARD LANDING PAGE)
+# TAB 0: EXECUTIVE OVERVIEW (LANDING DASHBOARD)
 # =============================================================================
 with tabs[0]:
     # 1. Top Power BI KPI Ribbon
@@ -757,8 +762,8 @@ with tabs[0]:
             benchmark_status="good" if yoy_rev_pct >= 0 else "neutral",
             badge_color="red",
             tooltip_def="Cumulative philanthropic cash flow and booked commitments in FY26 across all designations.",
-            tooltip_bench="U15 Canadian Benchmark: $3.0M – $6.5M annual annual fund commitments.",
-            tooltip_impact="Ensures institutional budget realization and unrestricted student bursary coverage."
+            tooltip_bench="U15 Canadian Benchmark: $3.0M – $6.5M annual fund commitments.",
+            tooltip_impact="Ensures institutional budget realization and unrestricted student bursary funding."
         )
     with h_col2:
         render_kpi_card(
@@ -794,51 +799,49 @@ with tabs[0]:
             badge_color="purple",
             tooltip_def="Total marketing, call center, and postage expenditure divided by total philanthropic revenue.",
             tooltip_bench="Association of Fundraising Professionals (AFP) Standard: < $0.15 per dollar raised.",
-            tooltip_impact="Signals operational excellence and stewardship integrity to major donors and Board of Governors."
+            tooltip_impact="Signals operational stewardship integrity to major donors and Board of Governors."
         )
 
-    # 2. Power BI Executive Strategic Headlines (Key Takeaways)
-    st.markdown("<div style='margin-top: 6px;'></div>", unsafe_allow_html=True)
+    # 2. Executive Strategic Highlights
     b_col1, b_col2, b_col3, b_col4 = st.columns(4)
     with b_col1:
         st.markdown("""
         <div class="exec-brief-card">
             <div class="exec-brief-title">🎯 Revenue Momentum</div>
-            <p class="exec-brief-text"><b>$3.39M</b> raised to date, representing <b>84.8%</b> of annual budget target with strong performance in student awards.</p>
+            <p class="exec-brief-text"><b>$3.39M</b> commitments booked, delivering <b>84.8%</b> of annual budget target with strong student aid growth.</p>
         </div>
         """, unsafe_allow_html=True)
     with b_col2:
         st.markdown("""
         <div class="exec-brief-card">
             <div class="exec-brief-title">🔄 Retention Exceeds CASE</div>
-            <p class="exec-brief-text"><b>62.5%</b> repeat donor retention surpasses the North American 60% standard, minimizing donor attrition risk.</p>
+            <p class="exec-brief-text"><b>62.5%</b> repeat donor retention surpasses the CASE 60% benchmark, safeguarding long-term pipeline value.</p>
         </div>
         """, unsafe_allow_html=True)
     with b_col3:
         st.markdown("""
         <div class="exec-brief-card">
             <div class="exec-brief-title">⚡ High-Efficiency Channels</div>
-            <p class="exec-brief-text">Email Digital delivered <b>$1.93M</b> at just <b>$14.59</b> cost per acquired donor, maximizing net proceeds.</p>
+            <p class="exec-brief-text">Email Digital generated <b>$1.93M</b> at just <b>$14.59</b> cost per acquired donor, maximizing net proceeds.</p>
         </div>
         """, unsafe_allow_html=True)
     with b_col4:
         st.markdown("""
         <div class="exec-brief-card">
-            <div class="exec-brief-title">🤖 Predictive Opportunity</div>
-            <p class="exec-brief-text">Random Forest model identified <b>1,418</b> uncaptured high-propensity alumni representing <b>$425k+</b> in pipeline.</p>
+            <div class="exec-brief-title">🤝 Engagement Multiplier</div>
+            <p class="exec-brief-text">Constituents active in 2+ CASE engagement modes demonstrate a <b>43.7%</b> giving rate vs 4.8% for single-touch alumni.</p>
         </div>
         """, unsafe_allow_html=True)
 
-    # 3. Power BI Visual Grid: Row 1 (Revenue & Donor Velocity + Target Achievement Bullet)
-    pbi_row1_c1, pbi_row1_c2 = st.columns([1.2, 0.8])
+    # 3. Visual Grid: Row 1
+    ov_r1_c1, ov_r1_c2 = st.columns([1.25, 0.75])
     
-    with pbi_row1_c1:
-        st.markdown("""
-        <div class="pbi-card-title">
-            <span>📈 Multi-Year Revenue & Donor Momentum (FY24 – FY26)</span>
-            <span style="font-size: 11px; font-weight: 500; color: #64748B;">Dual-Axis Actuals</span>
-        </div>
-        """, unsafe_allow_html=True)
+    with ov_r1_c1:
+        render_chart_card(
+            title="📈 Multi-Year Revenue Trajectory & Active Donors (FY24–FY26)",
+            subtitle="Dual-axis view showing revenue booked ($ CAD) against active donor headcount",
+            badge_text="Actuals"
+        )
         my_df = pd.DataFrame({
             'Fiscal Year': ['FY2024', 'FY2025', 'FY2026'],
             'Revenue ($)': [tot_rev_fy24, tot_rev_fy25, tot_rev_fy26],
@@ -854,8 +857,11 @@ with tabs[0]:
             y=my_df['Revenue ($)'],
             name='Total Revenue ($)',
             marker_color='#ED1B2F',
+            marker_line=dict(color='#B91C1C', width=1),
             text=my_df['Revenue ($)'].apply(lambda x: f"${x/1e6:.2f}M"),
-            textposition='auto',
+            textposition='outside',
+            textfont=dict(size=12, color='#0F172A', family='Inter'),
+            hovertemplate="<b>%{x}</b><br>Revenue: %{y:$,.0f}<extra></extra>",
             yaxis='y'
         ))
         fig_my.add_trace(go.Scatter(
@@ -865,29 +871,27 @@ with tabs[0]:
             mode='lines+markers+text',
             text=my_df['Donors'].apply(lambda x: f"{x:,}"),
             textposition='top center',
+            textfont=dict(size=11, color='#0F172A', family='Inter'),
             line=dict(color='#0F172A', width=3),
-            marker=dict(size=8, color='#0F172A'),
+            marker=dict(size=9, color='#FFFFFF', line=dict(width=3, color='#0F172A')),
+            hovertemplate="<b>%{x}</b><br>Active Donors: %{y:,}<extra></extra>",
             yaxis='y2'
         ))
         fig_my.update_layout(
-            yaxis=dict(title='Total Revenue ($ CAD)', showgrid=True, gridcolor='#F1F5F9'),
-            yaxis2=dict(title='Active Donor Count', overlaying='y', side='right', showgrid=False),
-            legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='right', x=1),
-            plot_bgcolor='rgba(0,0,0,0)',
-            paper_bgcolor='rgba(0,0,0,0)',
-            height=340,
-            margin=dict(l=40, r=40, t=20, b=30)
+            yaxis=dict(title='Total Revenue ($ CAD)', showgrid=True, gridcolor='#F1F5F9', tickformat='$,.0s'),
+            yaxis2=dict(title='Active Donors', overlaying='y', side='right', showgrid=False),
+            legend=dict(orientation='h', yanchor='bottom', y=1.04, xanchor='right', x=1),
+            height=330
         )
+        apply_custom_chart_theme(fig_my, height=330)
         st.plotly_chart(fig_my, use_container_width=True)
 
-    with pbi_row1_c2:
-        st.markdown("""
-        <div class="pbi-card-title">
-            <span>🎯 FY26 Annual Campaign Goal Pace</span>
-            <span style="font-size: 11px; font-weight: 500; color: #64748B;">Goal: $4.0M Stretch</span>
-        </div>
-        """, unsafe_allow_html=True)
-        
+    with ov_r1_c2:
+        render_chart_card(
+            title="🎯 FY26 Annual Campaign Goal Pace",
+            subtitle="Progress toward $4.0M annual strategic fund commitment target",
+            badge_text="Target Progress"
+        )
         target_goal = 4000000.0
         pct_goal = min(100.0, (tot_rev_fy26 / target_goal) * 100) if target_goal > 0 else 0.0
         
@@ -897,7 +901,7 @@ with tabs[0]:
             delta={'reference': target_goal, 'valueformat': '$,.0f', 'increasing': {'color': '#10B981'}},
             number={'valueformat': '$,.0f', 'font': {'size': 26, 'color': '#0F172A', 'family': 'Inter'}},
             gauge={
-                'axis': {'range': [0, 4500000], 'tickformat': '$,.0f', 'tickfont': {'size': 10}},
+                'axis': {'range': [0, 4500000], 'tickformat': '$,.0s', 'tickfont': {'size': 10}},
                 'bar': {'color': '#ED1B2F'},
                 'steps': [
                     {'range': [0, 2500000], 'color': '#F1F5F9'},
@@ -912,23 +916,22 @@ with tabs[0]:
             }
         ))
         fig_gauge.update_layout(
-            height=260,
-            margin=dict(l=25, r=25, t=25, b=25),
+            height=250,
+            margin=dict(l=25, r=25, t=15, b=15),
             paper_bgcolor='rgba(0,0,0,0)'
         )
         st.plotly_chart(fig_gauge, use_container_width=True)
-        st.markdown(f"<div style='text-align: center; font-size: 12px; color: #475569;'><b>{pct_goal:.1f}%</b> of annual target realized | <b>${max(0.0, target_goal - tot_rev_fy26):,.0f}</b> remaining to goal</div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='text-align: center; font-size: 12px; color: #475569;'><b>{pct_goal:.1f}%</b> of annual target realized | <b>${max(0.0, target_goal - tot_rev_fy26):,.0f}</b> remaining</div>", unsafe_allow_html=True)
 
-    # 4. Power BI Visual Grid: Row 2 (Faculty League Bar + CASE AEM Distribution)
-    pbi_row2_c1, pbi_row2_c2 = st.columns(2)
+    # 4. Visual Grid: Row 2
+    ov_r2_c1, ov_r2_c2 = st.columns(2)
     
-    with pbi_row2_c1:
-        st.markdown("""
-        <div class="pbi-card-title">
-            <span>🏛️ Top Faculties by Commitments & Participation Heat</span>
-            <span style="font-size: 11px; font-weight: 500; color: #64748B;">Faculty League</span>
-        </div>
-        """, unsafe_allow_html=True)
+    with ov_r2_c1:
+        render_chart_card(
+            title="🏛️ Top Faculties by Commitments & Participation Heat",
+            subtitle="Ranked annual giving by academic faculty with participation rate color scale",
+            badge_text="Faculty League"
+        )
         fac_league_ov = filtered_df.groupby('Primary_Faculty').agg(
             Alumni=('Constituent_ID', 'count'),
             Donors=('Gift_Count_FY26', lambda x: (x > 0).sum()),
@@ -943,21 +946,24 @@ with tabs[0]:
             y='Primary_Faculty',
             orientation='h',
             color='Participation_Rate',
-            color_continuous_scale='Reds',
+            color_continuous_scale=['#FED7AA', '#FB7185', '#E11D48', '#881337'],
             text=fac_league_ov['Total_Raised'].apply(lambda x: f"${x/1e3:,.0f}k"),
             labels={'Total_Raised': 'Commitments ($ CAD)', 'Primary_Faculty': '', 'Participation_Rate': 'Part %'}
         )
-        fig_fac_ov.update_traces(textposition='outside')
-        apply_powerbi_theme(fig_fac_ov, height=310)
+        fig_fac_ov.update_traces(
+            textposition='outside',
+            hovertemplate="<b>%{y}</b><br>Total Commitments: %{x:$,.0f}<extra></extra>"
+        )
+        apply_custom_chart_theme(fig_fac_ov, height=310)
+        fig_fac_ov.update_layout(coloraxis_colorbar=dict(title="Part %", thickness=12, len=0.8))
         st.plotly_chart(fig_fac_ov, use_container_width=True)
 
-    with pbi_row2_c2:
-        st.markdown("""
-        <div class="pbi-card-title">
-            <span>🤝 CASE 4-Pillar Alumni Engagement Distribution</span>
-            <span style="font-size: 11px; font-weight: 500; color: #64748B;">AEM Framework</span>
-        </div>
-        """, unsafe_allow_html=True)
+    with ov_r2_c2:
+        render_chart_card(
+            title="🤝 CASE 4-Pillar Alumni Engagement Distribution",
+            subtitle="Breakdown of alumni constituent body across CASE engagement modes",
+            badge_text="AEM Framework"
+        )
         aem_dist = filtered_df['CASE_Pillar_Count'].value_counts().sort_index().reset_index()
         aem_dist.columns = ['Pillars_Active', 'Constituent_Count']
         pillar_labels = {
@@ -973,17 +979,21 @@ with tabs[0]:
             aem_dist,
             names='Segment',
             values='Constituent_Count',
-            hole=0.5,
+            hole=0.55,
             color='Segment',
             color_discrete_map={
                 '0 Pillars (Disengaged)': '#E2E8F0',
                 '1 Pillar (Single Touch)': '#94A3B8',
-                '2 Pillars (Engaged)': '#3B82F6',
+                '2 Pillars (Engaged)': '#2563EB',
                 '3 Pillars (Highly Engaged)': '#10B981',
                 '4 Pillars (Super Core)': '#ED1B2F'
             }
         )
-        fig_aem_donut.update_traces(textposition='inside', textinfo='percent+label')
+        fig_aem_donut.update_traces(
+            textposition='inside',
+            textinfo='percent+label',
+            hovertemplate="<b>%{label}</b><br>Alumni: %{value:,}<br>Share: %{percent}<extra></extra>"
+        )
         fig_aem_donut.update_layout(
             showlegend=False,
             height=310,
@@ -991,25 +1001,23 @@ with tabs[0]:
         )
         st.plotly_chart(fig_aem_donut, use_container_width=True)
 
-    # 5. Direct Section Jump Matrix (Navigation Cards)
-    st.markdown("<div class='section-header'>🧭 Deep-Dive Pillar Directory</div>", unsafe_allow_html=True)
-    n_col1, n_col2, n_col3 = st.columns(3)
-    with n_col1:
+    # 5. Direct Section Directory Cards
+    st.markdown("<div class='section-header'>🧭 Strategic Pillar Deep-Dive Modules</div>", unsafe_allow_html=True)
+    d_col1, d_col2, d_col3 = st.columns(3)
+    with d_col1:
         st.info("**🏛️ Tab 1: Philanthropic Health**\n\nCommitments velocity, Pareto gift distribution, designation allocation, and McDill24 Giving Day impact analysis.")
         st.success("**🔄 Tab 2: Donor Lifecycle & Retention**\n\nInteractive migration Sankey diagram, LYBUNT win-backs, new donor acquisition, and monthly sustainers.")
-    with n_col2:
-        st.info("**📈 Tab 3: Marketing & Channels**\n\nMarketing CPDR, multichannel ROI bubble matrix, Marketing Cloud deliverability, and GA4 giving web conversion.")
+    with d_col2:
+        st.info("**📈 Tab 3: Marketing & Channels**\n\nMarketing CPDR, multichannel ROI comparison, Marketing Cloud deliverability, and GA4 giving web conversion.")
         st.success("**🤝 Tab 4: CASE 4-Pillar AEM**\n\nCASE Global Engagement index, event participation, show rate, volunteer hours, and reunion cycle spikes.")
-    with n_col3:
+    with d_col3:
         st.info("**💎 Tab 5: Prospect Capacity**\n\nWealth screening concentration, Tier 1 & Tier 2 conversion yields, faculty league benchmarking, and geographic spread.")
-        st.success("**🤖 Tab 6: Predictive ML Simulator**\n\nZero-leakage Random Forest propensity model, feature importance, interactive what-if simulator, and prioritized prospect call list.")
 
 
 # =============================================================================
 # TAB 1: PHILANTHROPIC HEALTH & REVENUE VELOCITY
 # =============================================================================
 with tabs[1]:
-    # Sub KPI Cards Row
     t1_c1, t1_c2, t1_c3 = st.columns(3)
     avg_gift = (tot_rev_fy26 / donors_fy26) if donors_fy26 > 0 else 0.0
     median_gift = filtered_df.loc[filtered_df['Giving_Amount_FY26'] > 0, 'Giving_Amount_FY26'].median() if donors_fy26 > 0 else 0.0
@@ -1056,17 +1064,25 @@ with tabs[1]:
             tooltip_impact="Validates campaign urgency, social gamification, and digital ambassador mobilization."
         )
         
-    st.markdown("<div style='margin-bottom: 16px;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='margin-bottom: 12px;'></div>", unsafe_allow_html=True)
     
-    col_chart1, col_chart2 = st.columns(2)
-    with col_chart1:
-        st.markdown('<div class="section-header">📊 Multi-Year Revenue & Donor Trajectory (FY24–FY26)</div>', unsafe_allow_html=True)
+    col_t1_1, col_t1_2 = st.columns(2)
+    with col_t1_1:
+        render_chart_card(
+            title="📊 Multi-Year Revenue & Donor Trajectory (FY24–FY26)",
+            subtitle="Comparing annual philanthropic revenue ($ CAD) against donor headcount",
+            badge_text="Multi-Year View"
+        )
         fig_my_t1 = go.Figure()
         fig_my_t1.add_trace(go.Bar(
             x=['FY2024', 'FY2025', 'FY2026'],
             y=[tot_rev_fy24, tot_rev_fy25, tot_rev_fy26],
             name='Total Revenue ($)',
             marker_color='#ED1B2F',
+            marker_line=dict(color='#B91C1C', width=1),
+            text=[f"${tot_rev_fy24/1e6:.2f}M", f"${tot_rev_fy25/1e6:.2f}M", f"${tot_rev_fy26/1e6:.2f}M"],
+            textposition='outside',
+            hovertemplate="<b>%{x}</b><br>Revenue: %{y:$,.0f}<extra></extra>",
             yaxis='y'
         ))
         fig_my_t1.add_trace(go.Scatter(
@@ -1077,41 +1093,73 @@ with tabs[1]:
             text=[f"{(filtered_df['Gift_Count_FY24'] > 0).sum():,}", f"{donors_fy25:,}", f"{donors_fy26:,}"],
             textposition='top center',
             line=dict(color='#0F172A', width=3),
-            marker=dict(size=8, color='#0F172A'),
+            marker=dict(size=8, color='#FFFFFF', line=dict(width=3, color='#0F172A')),
+            hovertemplate="<b>%{x}</b><br>Donors: %{y:,}<extra></extra>",
             yaxis='y2'
         ))
         fig_my_t1.update_layout(
-            yaxis=dict(title='Total Revenue ($)', showgrid=True, gridcolor='#F1F5F9'),
+            yaxis=dict(title='Total Revenue ($ CAD)', showgrid=True, gridcolor='#F1F5F9', tickformat='$,.0s'),
             yaxis2=dict(title='Active Donors', overlaying='y', side='right', showgrid=False),
-            legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='right', x=1),
-            plot_bgcolor='rgba(0,0,0,0)',
-            paper_bgcolor='rgba(0,0,0,0)',
-            height=340,
-            margin=dict(l=40, r=40, t=20, b=30)
+            legend=dict(orientation='h', yanchor='bottom', y=1.04, xanchor='right', x=1),
+            height=340
         )
+        apply_custom_chart_theme(fig_my_t1, height=340)
         st.plotly_chart(fig_my_t1, use_container_width=True)
         
-    with col_chart2:
-        st.markdown('<div class="section-header">📈 Pareto Gift Size Distribution (Log-Scale)</div>', unsafe_allow_html=True)
-        active_gifts = filtered_df.loc[filtered_df['Giving_Amount_FY26'] > 0, 'Giving_Amount_FY26']
-        if len(active_gifts) > 0:
-            fig_dist = px.histogram(
-                active_gifts,
-                x='Giving_Amount_FY26',
-                log_x=True,
-                nbins=35,
-                color_discrete_sequence=['#1E293B'],
-                labels={'Giving_Amount_FY26': 'FY26 Giving Amount ($ CAD - Log Scale)'}
-            )
-            apply_powerbi_theme(fig_dist, height=340)
-            fig_dist.update_layout(yaxis=dict(title='Donor Headcount', showgrid=True, gridcolor='#F1F5F9'))
-            st.plotly_chart(fig_dist, use_container_width=True)
-        else:
-            st.info("No active donors in current filter.")
+    with col_t1_2:
+        render_chart_card(
+            title="📈 Pareto Gift Size Tier Breakdown (FY26)",
+            subtitle="Donor headcount and total dollars captured across annual gift tiers",
+            badge_text="Pareto Analysis"
+        )
+        tier_agg = filtered_df[filtered_df['Gift_Size_Tier'] != 'Non-Donor'].groupby('Gift_Size_Tier').agg(
+            Donors=('Constituent_ID', 'count'),
+            Total_Raised=('Giving_Amount_FY26', 'sum')
+        ).reset_index()
+        
+        tier_order = ['Grassroots (<$100)', 'Centennial ($100–$499)', 'Leadership ($500–$2.4k)', 'Major ($2.5k–$9.9k)', 'Principal ($10k+)']
+        tier_agg['Tier_Order'] = tier_agg['Gift_Size_Tier'].apply(lambda x: tier_order.index(x) if x in tier_order else 99)
+        tier_agg = tier_agg.sort_values(by='Tier_Order')
+        
+        fig_tier = go.Figure()
+        fig_tier.add_trace(go.Bar(
+            x=tier_agg['Gift_Size_Tier'],
+            y=tier_agg['Total_Raised'],
+            name='Total Dollars ($)',
+            marker_color='#0F172A',
+            text=tier_agg['Total_Raised'].apply(lambda x: f"${x/1e3:,.0f}k"),
+            textposition='outside',
+            hovertemplate="<b>%{x}</b><br>Total Dollars: %{y:$,.0f}<extra></extra>",
+            yaxis='y'
+        ))
+        fig_tier.add_trace(go.Scatter(
+            x=tier_agg['Gift_Size_Tier'],
+            y=tier_agg['Donors'],
+            name='Donor Count',
+            mode='lines+markers+text',
+            text=tier_agg['Donors'].apply(lambda x: f"{x:,}"),
+            textposition='top center',
+            line=dict(color='#ED1B2F', width=2.5),
+            marker=dict(size=8, color='#ED1B2F'),
+            hovertemplate="<b>%{x}</b><br>Donors: %{y:,}<extra></extra>",
+            yaxis='y2'
+        ))
+        fig_tier.update_layout(
+            yaxis=dict(title='Total Dollars ($ CAD)', showgrid=True, gridcolor='#F1F5F9', tickformat='$,.0s'),
+            yaxis2=dict(title='Donor Headcount', overlaying='y', side='right', showgrid=False),
+            legend=dict(orientation='h', yanchor='bottom', y=1.04, xanchor='right', x=1),
+            height=340
+        )
+        apply_custom_chart_theme(fig_tier, height=340)
+        st.plotly_chart(fig_tier, use_container_width=True)
             
-    col_chart3, col_chart4 = st.columns(2)
-    with col_chart3:
-        st.markdown('<div class="section-header">🎯 Philanthropic Designation Allocation</div>', unsafe_allow_html=True)
+    col_t1_3, col_t1_4 = st.columns(2)
+    with col_t1_3:
+        render_chart_card(
+            title="🎯 Philanthropic Designation Allocation",
+            subtitle="Proportional distribution of FY26 gifts by institutional designation fund",
+            badge_text="Fund Allocation"
+        )
         desig_df = filtered_df[filtered_df['Giving_Amount_FY26'] > 0].groupby('Last_Gift_Designation')['Giving_Amount_FY26'].agg(
             Revenue='sum', Donors='count'
         ).reset_index().sort_values(by='Revenue', ascending=False)
@@ -1124,19 +1172,26 @@ with tabs[1]:
                 hole=0.45,
                 color_discrete_sequence=['#ED1B2F', '#0F172A', '#2563EB', '#10B981', '#F59E0B']
             )
+            fig_desig.update_traces(
+                textposition='inside',
+                textinfo='percent+label',
+                hovertemplate="<b>%{label}</b><br>Revenue: %{value:$,.0f}<br>Share: %{percent}<extra></extra>"
+            )
             fig_desig.update_layout(
-                plot_bgcolor='rgba(0,0,0,0)',
-                paper_bgcolor='rgba(0,0,0,0)',
-                height=340,
-                margin=dict(l=20, r=20, t=20, b=20),
-                legend=dict(orientation='h', y=-0.15)
+                height=330,
+                margin=dict(l=20, r=20, t=10, b=10),
+                showlegend=False
             )
             st.plotly_chart(fig_desig, use_container_width=True)
         else:
-            st.info("No gift designations to display.")
+            st.info("No active gifts recorded for current filter criteria.")
             
-    with col_chart4:
-        st.markdown('<div class="section-header">⚡ McDill24 Giving Day Impact Comparison</div>', unsafe_allow_html=True)
+    with col_t1_4:
+        render_chart_card(
+            title="⚡ McDill24 Giving Day Impact vs Traditional Giving",
+            subtitle="Comparing average gift and digital engagement behavior between cohorts",
+            badge_text="Campaign Comparison"
+        )
         if donors_fy26 > 0:
             m24_comp = filtered_df[filtered_df['Giving_Amount_FY26'] > 0].copy()
             m24_comp['Giving_Day_Type'] = np.where(m24_comp['McGill24_Gift_Amount_FY26'] > 0, 'McDill24 Donors', 'Traditional Donors')
@@ -1152,11 +1207,15 @@ with tabs[1]:
                 x='Giving_Day_Type',
                 y='Avg_Gift',
                 color='Giving_Day_Type',
-                color_discrete_map={'McDill24 Donors': '#ED1B2F', 'Traditional Donors': '#1E293B'},
+                color_discrete_map={'McDill24 Donors': '#ED1B2F', 'Traditional Donors': '#0F172A'},
                 text=comp_metrics['Avg_Gift'].apply(lambda x: f"${x:,.2f}"),
                 labels={'Avg_Gift': 'Average FY26 Gift ($)'}
             )
-            apply_powerbi_theme(fig_comp, height=340)
+            fig_comp.update_traces(
+                textposition='outside',
+                hovertemplate="<b>%{x}</b><br>Average Gift: %{y:$,.2f}<extra></extra>"
+            )
+            apply_custom_chart_theme(fig_comp, height=330)
             fig_comp.update_layout(showlegend=False, yaxis=dict(title='Average Annual Gift ($)'))
             st.plotly_chart(fig_comp, use_container_width=True)
 
@@ -1228,24 +1287,27 @@ with tabs[2]:
             tooltip_impact="Provides predictable, high-retention annual cash flow with 85%+ multi-year retention."
         )
         
-    st.markdown("<div style='margin-bottom: 16px;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='margin-bottom: 12px;'></div>", unsafe_allow_html=True)
     
     # Donor Migration Sankey Diagram
-    st.markdown('<div class="section-header">🌊 Interactive Donor Migration Sankey (FY25 Status ➔ FY26 Outcome)</div>', unsafe_allow_html=True)
-    
+    render_chart_card(
+        title="🌊 Interactive Donor Migration Flow (FY25 Baseline ➔ FY26 Status)",
+        subtitle="Visualizing retention, lapsed win-back, first-time acquisition, and constituent attrition",
+        badge_text="Migration Sankey"
+    )
     lybunt_cnt = ((filtered_df['Donated_FY25'] == 1) & (filtered_df['Donated_FY26'] == 0)).sum()
     dormant_cnt = n_lapsed_pool - reactivated_cnt
     remain_never_cnt = n_never_pool - new_acquired_cnt
     
     sankey_labels = [
         f"FY25 Donors ({donors_fy25:,})",
-        f"Prior Lapsed Pool ({n_lapsed_pool:,})",
-        f"Never-Gave Pool ({n_never_pool:,})",
+        f"Prior Lapsed ({n_lapsed_pool:,})",
+        f"Never Gave ({n_never_pool:,})",
         f"Retained Donors ({retained_25_26:,})",
-        f"LYBUNTs / Lapsed ({lybunt_cnt:,})",
+        f"LYBUNTs ({lybunt_cnt:,})",
         f"Reactivated Donors ({reactivated_cnt:,})",
         f"Dormant Lapsed ({dormant_cnt:,})",
-        f"Newly Acquired Donors ({new_acquired_cnt:,})",
+        f"New Acquired ({new_acquired_cnt:,})",
         f"Unacquired Alumni ({remain_never_cnt:,})"
     ]
     
@@ -1256,7 +1318,7 @@ with tabs[2]:
     fig_sankey = go.Figure(data=[go.Sankey(
         node=dict(
             pad=18,
-            thickness=20,
+            thickness=18,
             line=dict(color="#CBD5E1", width=0.5),
             label=sankey_labels,
             color=["#0F172A", "#F59E0B", "#94A3B8", "#10B981", "#EF4444", "#3B82F6", "#CBD5E1", "#ED1B2F", "#E2E8F0"]
@@ -1270,15 +1332,19 @@ with tabs[2]:
         )
     )])
     fig_sankey.update_layout(
-        height=380,
-        margin=dict(l=20, r=20, t=20, b=20),
+        height=360,
+        margin=dict(l=15, r=15, t=15, b=15),
         font=dict(family="Inter, sans-serif", size=12, color="#0F172A")
     )
     st.plotly_chart(fig_sankey, use_container_width=True)
     
     col_t2_1, col_t2_2 = st.columns(2)
     with col_t2_1:
-        st.markdown('<div class="section-header">🔄 Repeat Donor Behavior (FY25 ➔ FY26)</div>', unsafe_allow_html=True)
+        render_chart_card(
+            title="🔄 Repeat Donor Giving Trends (FY25 ➔ FY26)",
+            subtitle="Proportion of retained repeat donors who upgraded, maintained, or downgraded gift level",
+            badge_text="Upgrade Velocity"
+        )
         repeat_mask = (filtered_df['Donated_FY25'] == 1) & (filtered_df['Donated_FY26'] == 1)
         repeat_data = filtered_df[repeat_mask]
         if len(repeat_data) > 0:
@@ -1299,14 +1365,22 @@ with tabs[2]:
                 color_discrete_map={'Upgraded (+15-60%)': '#10B981', 'Maintained (Same)': '#3B82F6', 'Downgraded (-5-30%)': '#F59E0B'},
                 text=up_df['Percentage'].apply(lambda x: f"{x:.1f}%")
             )
-            apply_powerbi_theme(fig_up, height=320)
+            fig_up.update_traces(
+                textposition='outside',
+                hovertemplate="<b>%{x}</b><br>Donors: %{y:,}<extra></extra>"
+            )
+            apply_custom_chart_theme(fig_up, height=310)
             fig_up.update_layout(showlegend=False, yaxis=dict(title='Repeat Donor Count'))
             st.plotly_chart(fig_up, use_container_width=True)
         else:
-            st.info("No repeat donors in current filter.")
+            st.info("No repeat donors in current filter selection.")
             
     with col_t2_2:
-        st.markdown('<div class="section-header">💎 Monthly Sustainers vs. Single-Gift Donors</div>', unsafe_allow_html=True)
+        render_chart_card(
+            title="💎 Monthly Sustainers vs. Single-Gift Donors",
+            subtitle="Comparing annual giving realization and lifetime event engagement",
+            badge_text="Sustainer Economics"
+        )
         if donors_fy26 > 0:
             sust_comp = filtered_df[filtered_df['Giving_Amount_FY26'] > 0].copy()
             sust_comp['Donor_Type'] = np.where(sust_comp['Is_Monthly_Sustainer_FY26'] == 1, 'Monthly Sustainer', 'Single Gift Donor')
@@ -1324,7 +1398,11 @@ with tabs[2]:
                 color_discrete_map={'Monthly Sustainer': '#7C3AED', 'Single Gift Donor': '#64748B'},
                 text=sust_agg['Avg_Annual_Gift'].apply(lambda x: f"${x:,.2f}")
             )
-            apply_powerbi_theme(fig_sust, height=320)
+            fig_sust.update_traces(
+                textposition='outside',
+                hovertemplate="<b>%{x}</b><br>Avg Annual Giving: %{y:$,.2f}<extra></extra>"
+            )
+            apply_custom_chart_theme(fig_sust, height=310)
             fig_sust.update_layout(showlegend=False, yaxis=dict(title='Avg Annual Giving ($)'))
             st.plotly_chart(fig_sust, use_container_width=True)
 
@@ -1393,11 +1471,15 @@ with tabs[3]:
             tooltip_impact="Monitors frictionless checkout UI and digital payment conversion drop-offs."
         )
         
-    st.markdown("<div style='margin-bottom: 16px;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='margin-bottom: 12px;'></div>", unsafe_allow_html=True)
     
     col_t3_1, col_t3_2 = st.columns([1.1, 0.9])
     with col_t3_1:
-        st.markdown('<div class="section-header">🎯 Solicitation Channel Efficiency Matrix</div>', unsafe_allow_html=True)
+        render_chart_card(
+            title="🎯 Solicitation Channel ROI & Conversion Matrix",
+            subtitle="Donor conversion rate (%) vs Marketing return multiplier across solicitation channels",
+            badge_text="Channel Performance"
+        )
         chan_df = filtered_df.groupby('Display_Channel').agg(
             Constituents=('Constituent_ID', 'count'),
             Donors=('Gift_Count_FY26', lambda x: (x > 0).sum()),
@@ -1408,28 +1490,28 @@ with tabs[3]:
         chan_df['Cost_Per_Donor'] = chan_df['Cost'] / chan_df['Donors'].replace(0, np.nan)
         chan_df['ROI'] = chan_df['Raised'] / chan_df['Cost'].replace(0, np.nan)
         
-        fig_bubble = px.scatter(
+        fig_chan_bar = px.bar(
             chan_df,
-            x='Conv_Rate',
-            y='Cost_Per_Donor',
-            size='Raised',
-            color='Display_Channel',
-            hover_name='Display_Channel',
-            text='Display_Channel',
-            size_max=45,
-            color_discrete_sequence=['#2563EB', '#ED1B2F', '#0F172A', '#10B981', '#64748B'],
-            labels={
-                'Conv_Rate': 'Donor Conversion Rate (%)',
-                'Cost_Per_Donor': 'Cost Per Acquired Donor ($ CAD)'
-            }
+            x='Display_Channel',
+            y='Conv_Rate',
+            color='ROI',
+            color_continuous_scale='Reds',
+            text=chan_df['Conv_Rate'].apply(lambda x: f"{x:.1f}%"),
+            labels={'Conv_Rate': 'Conversion Rate (%)', 'Display_Channel': '', 'ROI': 'ROI Multiplier'}
         )
-        fig_bubble.update_traces(textposition='top center')
-        apply_powerbi_theme(fig_bubble, height=360)
-        fig_bubble.update_layout(showlegend=False)
-        st.plotly_chart(fig_bubble, use_container_width=True)
+        fig_chan_bar.update_traces(
+            textposition='outside',
+            hovertemplate="<b>%{x}</b><br>Conversion Rate: %{y:.2f}%<extra></extra>"
+        )
+        apply_custom_chart_theme(fig_chan_bar, height=340)
+        st.plotly_chart(fig_chan_bar, use_container_width=True)
         
     with col_t3_2:
-        st.markdown('<div class="section-header">📋 Channel Empirical League Table</div>', unsafe_allow_html=True)
+        render_chart_card(
+            title="📋 Channel Empirical League Table",
+            subtitle="Full revenue, cost, acquisition cost, and ROI economics by channel",
+            badge_text="Audit Table"
+        )
         chan_disp = chan_df.copy()
         chan_disp['Conv_Rate'] = chan_disp['Conv_Rate'].apply(lambda x: f"{x:.2f}%")
         chan_disp['Cost'] = chan_disp['Cost'].apply(lambda x: f"${x:,.2f}")
@@ -1443,7 +1525,11 @@ with tabs[3]:
         )
         
     # Omnichannel Digital Conversion Funnel
-    st.markdown('<div class="section-header">🔻 Omnichannel Digital Conversion Funnel (Marketing Cloud ➔ GA4 ➔ Gift)</div>', unsafe_allow_html=True)
+    render_chart_card(
+        title="🔻 Omnichannel Digital Conversion Funnel (SFMC ➔ GA4 ➔ CRM Gift)",
+        subtitle="End-to-end constituent attrition from mass broadcast delivery through verified gift checkout",
+        badge_text="Funnel Drop-Off"
+    )
     funnel_stages = [
         "1. Addressable Universe",
         "2. Deliverable Valid Email",
@@ -1470,7 +1556,7 @@ with tabs[3]:
         marker=dict(color=["#0F172A", "#1E293B", "#334155", "#475569", "#2563EB", "#D97706", "#ED1B2F"])
     ))
     fig_funnel.update_layout(
-        height=340,
+        height=320,
         margin=dict(l=20, r=20, t=10, b=10),
         font=dict(family="Inter, sans-serif", size=12, color="#0F172A")
     )
@@ -1545,11 +1631,15 @@ with tabs[4]:
             tooltip_impact="Volunteers give at an 8x rate relative to general alumni and represent future board prospects."
         )
         
-    st.markdown("<div style='margin-bottom: 16px;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='margin-bottom: 12px;'></div>", unsafe_allow_html=True)
     
     col_t4_1, col_t4_2 = st.columns(2)
     with col_t4_1:
-        st.markdown('<div class="section-header">🎯 CASE Engagement Index vs. Philanthropic Lift</div>', unsafe_allow_html=True)
+        render_chart_card(
+            title="🎯 CASE Engagement Index vs. Philanthropic Lift",
+            subtitle="Giving participation rate (%) jumps dramatically as alumni engage across multiple modes",
+            badge_text="CASE Lift Law"
+        )
         aem_analysis = filtered_df.groupby('CASE_Pillar_Count').agg(
             Constituents=('Constituent_ID', 'count'),
             Donors=('Gift_Count_FY26', lambda x: (x > 0).sum()),
@@ -1563,20 +1653,27 @@ with tabs[4]:
             x='CASE_Pillar_Count',
             y='Giving_Rate',
             color='CASE_Pillar_Count',
-            color_continuous_scale='Reds',
+            color_continuous_scale=['#CBD5E1', '#93C5FD', '#3B82F6', '#10B981', '#ED1B2F'],
             text=aem_analysis['Giving_Rate'].apply(lambda x: f"{x:.1f}%"),
             labels={
-                'CASE_Pillar_Count': 'Number of Active CASE Pillars (0 to 4)',
+                'CASE_Pillar_Count': 'Number of Active CASE Modes (0 to 4)',
                 'Giving_Rate': 'FY26 Giving Participation Rate (%)'
             }
         )
-        fig_aem.update_traces(textposition='outside')
-        apply_powerbi_theme(fig_aem, height=340)
+        fig_aem.update_traces(
+            textposition='outside',
+            hovertemplate="<b>%{x} Active Modes</b><br>Giving Rate: %{y:.1f}%<extra></extra>"
+        )
+        apply_custom_chart_theme(fig_aem, height=330)
         fig_aem.update_layout(coloraxis_showscale=False, yaxis=dict(title='Donor Conversion Rate (%)'))
         st.plotly_chart(fig_aem, use_container_width=True)
         
     with col_t4_2:
-        st.markdown('<div class="section-header">🎉 Homecoming & Event Peaks Across Reunion Cycles</div>', unsafe_allow_html=True)
+        render_chart_card(
+            title="🎉 Homecoming & Event Peaks Across Reunion Cycles",
+            subtitle="Homecoming spikes corresponding to traditional 5-year milestone reunion cohorts",
+            badge_text="Reunion Milestone"
+        )
         years_df = filtered_df.groupby('Years_Since_Grad').agg(
             Constituents=('Constituent_ID', 'count'),
             Events_Attended=('Events_Attended_FY26', lambda x: (x > 0).sum()),
@@ -1589,23 +1686,25 @@ with tabs[4]:
         fig_reunion.add_trace(go.Scatter(
             x=years_df['Years_Since_Grad'],
             y=years_df['Event_Rate'],
-            name='Any Event Attendance (%)',
+            name='All Event Attendance (%)',
             mode='lines',
-            line=dict(color='#0F172A', width=2)
+            line=dict(color='#0F172A', width=2),
+            hovertemplate="<b>%{x} Years Since Grad</b><br>Event Attendance: %{y:.1f}%<extra></extra>"
         ))
         fig_reunion.add_trace(go.Scatter(
             x=years_df['Years_Since_Grad'],
             y=years_df['Homecoming_Rate'],
-            name='Homecoming Attendance (%)',
+            name='Homecoming Reunion (%)',
             mode='lines+markers',
             line=dict(color='#ED1B2F', width=2.5),
-            marker=dict(size=5)
+            marker=dict(size=5, color='#ED1B2F'),
+            hovertemplate="<b>%{x} Years Since Grad</b><br>Homecoming Attendance: %{y:.1f}%<extra></extra>"
         ))
-        apply_powerbi_theme(fig_reunion, height=340)
+        apply_custom_chart_theme(fig_reunion, height=330)
         fig_reunion.update_layout(
             xaxis=dict(title='Years Since Graduation (Cohorts)'),
             yaxis=dict(title='Participation Rate (%)'),
-            legend=dict(orientation='h', y=-0.2)
+            legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='right', x=1)
         )
         st.plotly_chart(fig_reunion, use_container_width=True)
 
@@ -1663,11 +1762,15 @@ with tabs[5]:
             tooltip_impact="High-velocity leadership annual giving and principal prospect incubation pool."
         )
         
-    st.markdown("<div style='margin-bottom: 16px;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='margin-bottom: 12px;'></div>", unsafe_allow_html=True)
     
     col_t5_1, col_t5_2 = st.columns([1.1, 0.9])
     with col_t5_1:
-        st.markdown('<div class="section-header">🏛️ McDill Faculty League Table</div>', unsafe_allow_html=True)
+        render_chart_card(
+            title="🏛️ McDill Faculty League Commitments",
+            subtitle="Comparing total revenue raised across faculties with participation heat",
+            badge_text="Faculty League"
+        )
         fac_league = filtered_df.groupby('Primary_Faculty').agg(
             Alumni=('Constituent_ID', 'count'),
             Donors=('Gift_Count_FY26', lambda x: (x > 0).sum()),
@@ -1678,7 +1781,7 @@ with tabs[5]:
         fac_league['Participation_Rate'] = (fac_league['Donors'] / fac_league['Alumni']) * 100
         fac_league['Retention_Rate'] = (fac_league['Retained_Donors'] / fac_league['FY25_Donors'].replace(0, np.nan)) * 100
         fac_league['Avg_Gift'] = fac_league['Total_Raised'] / fac_league['Donors'].replace(0, np.nan)
-        fac_league = fac_league.sort_values(by='Total_Raised', ascending=False)
+        fac_league = fac_league.sort_values(by='Total_Raised', ascending=True)
         
         fig_fac = px.bar(
             fac_league,
@@ -1686,17 +1789,24 @@ with tabs[5]:
             y='Primary_Faculty',
             orientation='h',
             color='Participation_Rate',
-            color_continuous_scale='Reds',
+            color_continuous_scale=['#FED7AA', '#FB7185', '#E11D48', '#881337'],
             text=fac_league['Total_Raised'].apply(lambda x: f"${x/1e3:,.0f}k"),
-            labels={'Total_Raised': 'Total FY26 Commitments ($ CAD)', 'Primary_Faculty': 'Faculty'}
+            labels={'Total_Raised': 'Total FY26 Commitments ($ CAD)', 'Primary_Faculty': '', 'Participation_Rate': 'Part %'}
         )
-        fig_fac.update_traces(textposition='outside')
-        apply_powerbi_theme(fig_fac, height=360)
-        fig_fac.update_layout(yaxis=dict(autorange='reversed'))
+        fig_fac.update_traces(
+            textposition='outside',
+            hovertemplate="<b>%{y}</b><br>Total Raised: %{x:$,.0f}<extra></extra>"
+        )
+        apply_custom_chart_theme(fig_fac, height=360)
+        fig_fac.update_layout(coloraxis_colorbar=dict(title="Part %", thickness=12, len=0.8))
         st.plotly_chart(fig_fac, use_container_width=True)
         
     with col_t5_2:
-        st.markdown('<div class="section-header">💎 Wealth Tier Realization Matrix</div>', unsafe_allow_html=True)
+        render_chart_card(
+            title="💎 Wealth Tier Realization Matrix",
+            subtitle="Constituent volume, donors, participation %, and share of funds raised",
+            badge_text="Screening Matrix"
+        )
         wealth_table = filtered_df.groupby('Wealth_Screening_Rating').agg(
             Alumni=('Constituent_ID', 'count'),
             Donors=('Gift_Count_FY26', lambda x: (x > 0).sum()),
@@ -1714,7 +1824,11 @@ with tabs[5]:
             use_container_width=True
         )
         
-    st.markdown('<div class="section-header">🌍 Geographic Philanthropic Distribution</div>', unsafe_allow_html=True)
+    render_chart_card(
+        title="🌍 Geographic Philanthropic Distribution",
+        subtitle="Regional philanthropic revenue ($ CAD) and active participation rate",
+        badge_text="Geography"
+    )
     geo_df = filtered_df.groupby('Geographic_Region').agg(
         Alumni=('Constituent_ID', 'count'),
         Donors=('Gift_Count_FY26', lambda x: (x > 0).sum()),
@@ -1729,192 +1843,15 @@ with tabs[5]:
         color='Geographic_Region',
         color_discrete_sequence=['#ED1B2F', '#0F172A', '#2563EB', '#10B981'],
         text=geo_df.apply(lambda r: f"${r['Revenue']/1e6:.2f}M ({r['Participation']:.1f}% Part)", axis=1),
-        labels={'Revenue': 'Total FY26 Revenue ($)', 'Geographic_Region': 'Region'}
+        labels={'Revenue': 'Total FY26 Revenue ($ CAD)', 'Geographic_Region': 'Region'}
     )
-    fig_geo.update_traces(textposition='outside')
-    apply_powerbi_theme(fig_geo, height=320)
+    fig_geo.update_traces(
+        textposition='outside',
+        hovertemplate="<b>%{x}</b><br>Revenue: %{y:$,.0f}<extra></extra>"
+    )
+    apply_custom_chart_theme(fig_geo, height=310)
     fig_geo.update_layout(showlegend=False)
     st.plotly_chart(fig_geo, use_container_width=True)
-
-
-# =============================================================================
-# TAB 6: PREDICTIVE ML PROPENSITY SIMULATOR & PROSPECT LEAD GENERATOR
-# =============================================================================
-with tabs[6]:
-    # ML Performance Metric Cards
-    m_c1, m_c2, m_c3, m_c4 = st.columns(4)
-    
-    # Filtered uncaptured prospects (guaranteed to contain Predicted_Propensity_Score!)
-    non_donors_filt = filtered_df[filtered_df['Donated_FY26'] == 0].copy()
-    high_prop_uncaptured = non_donors_filt[non_donors_filt['Predicted_Propensity_Score'] >= 0.35]
-    est_uncaptured_rev = (high_prop_uncaptured['Predicted_Propensity_Score'] * 450.0).sum()
-    
-    with m_c1:
-        render_kpi_card(
-            title="Model ROC-AUC Score",
-            value=f"{test_auc:.4f}",
-            pillar_badge="ML Performance",
-            benchmark_text="Supervised Random Forest",
-            benchmark_status="good",
-            badge_color="green",
-            tooltip_def="Area under the Receiver Operating Characteristic curve evaluated on 6,000 holdout records.",
-            tooltip_bench="Production ML Standard: AUC > 0.85 indicates outstanding discrimination power.",
-            tooltip_impact="Ensures high-probability solicitation without target data leakage."
-        )
-    with m_c2:
-        render_kpi_card(
-            title="Model Accuracy",
-            value=f"{test_acc*100:.2f}%",
-            pillar_badge="Precision",
-            benchmark_text="Optimal Decision Threshold: 0.50",
-            benchmark_status="good",
-            badge_color="blue",
-            tooltip_def="Percentage of correct donor vs non-donor classifications on holdout test set.",
-            tooltip_bench="Industry Standard: > 85% balanced accuracy.",
-            tooltip_impact="Prevents wasted solicitation spend on constituents with zero propensity."
-        )
-    with m_c3:
-        render_kpi_card(
-            title="High-Propensity Leads",
-            value=f"{len(high_prop_uncaptured):,}",
-            pillar_badge="Prospecting",
-            benchmark_text="Alumni with Propensity &ge; 35%",
-            benchmark_status="good",
-            badge_color="red",
-            tooltip_def="Filtered non-donors in FY26 who display high statistical propensity (>=35%) to give.",
-            tooltip_bench="Provides actionable, high-conversion prospect target list.",
-            tooltip_impact="Immediate targets for leadership annual giving officer direct phone calls."
-        )
-    with m_c4:
-        render_kpi_card(
-            title="Uncaptured Pipeline",
-            value=f"${est_uncaptured_rev:,.0f}",
-            pillar_badge="Opportunity",
-            benchmark_text="Expected Revenue Potential",
-            benchmark_status="good",
-            badge_color="purple",
-            tooltip_def="Expected philanthropic revenue calculated via propensity-weighted ask models.",
-            tooltip_bench="Target: Capture 40%+ prior to fiscal year-end close.",
-            tooltip_impact="Quantifies tangible financial ROI from deploying predictive intelligence."
-        )
-        
-    st.markdown("<div style='margin-bottom: 20px;'></div>", unsafe_allow_html=True)
-    
-    # Row 1: Feature Importance & What-If Simulator
-    col_ml_1, col_ml_2 = st.columns([1, 1.1])
-    
-    with col_ml_1:
-        st.markdown('<div class="section-header">🧠 Top Predictive Drivers of Giving Propensity</div>', unsafe_allow_html=True)
-        top10_feat = feat_importances.head(10).reset_index()
-        top10_feat.columns = ['Feature', 'Importance']
-        top10_feat['Feature_Clean'] = top10_feat['Feature'].str.replace('_', ' ')
-        
-        fig_feat = px.bar(
-            top10_feat.sort_values(by='Importance', ascending=True),
-            x='Importance',
-            y='Feature_Clean',
-            orientation='h',
-            color='Importance',
-            color_continuous_scale='Reds',
-            labels={'Importance': 'Relative Weight', 'Feature_Clean': 'Feature'}
-        )
-        apply_powerbi_theme(fig_feat, height=360)
-        fig_feat.update_layout(coloraxis_showscale=False)
-        st.plotly_chart(fig_feat, use_container_width=True)
-        
-    with col_ml_2:
-        st.markdown('<div class="section-header">🔮 Interactive "What-If" Constituent Simulator</div>', unsafe_allow_html=True)
-        with st.container(border=True):
-            sim_col1, sim_col2 = st.columns(2)
-            with sim_col1:
-                sim_fac = st.selectbox("Faculty", options=all_faculties, index=0)
-                sim_year = st.slider("Graduation Year", min_value=1965, max_value=2025, value=2010)
-                sim_wealth = st.selectbox("Wealth Tier", options=all_tiers, index=1)
-                sim_fy25_amt = st.number_input("FY25 Giving Amount ($)", min_value=0.0, max_value=25000.0, value=250.0, step=50.0)
-            with sim_col2:
-                sim_events = st.slider("FY26 Events Attended", min_value=0, max_value=6, value=2)
-                sim_clicks = st.slider("FY26 Email Clicks", min_value=0, max_value=15, value=2)
-                sim_ga4 = st.slider("GA4 Giving Page Views", min_value=0, max_value=18, value=3)
-                sim_vol = st.checkbox("Active Volunteer (FY26)", value=True)
-                
-            # Construct feature vector for prediction
-            sim_dict = {f: 0 for f in ml_feature_names}
-            sim_dict['Class_Year'] = sim_year
-            sim_dict['Birth_Year'] = sim_year - 22
-            sim_dict['Giving_Amount_FY25'] = sim_fy25_amt
-            sim_dict['Gift_Count_FY25'] = 1 if sim_fy25_amt > 0 else 0
-            sim_dict['Giving_Amount_FY24'] = sim_fy25_amt * 0.9 if sim_fy25_amt > 0 else 0
-            sim_dict['Gift_Count_FY24'] = 1 if sim_fy25_amt > 0 else 0
-            sim_dict['Lifetime_Events_Attended'] = sim_events * 3
-            sim_dict['Events_Attended_FY26'] = sim_events
-            sim_dict['Events_Registered_FY26'] = sim_events
-            sim_dict['Emails_Clicked_FY26'] = sim_clicks
-            sim_dict['GA4_Giving_Page_Views_FY26'] = sim_ga4
-            sim_dict['Is_Active_Volunteer_FY26'] = 1 if sim_vol else 0
-            
-            # Dummy column matches
-            fac_col = f"Primary_Faculty_{sim_fac}"
-            if fac_col in sim_dict:
-                sim_dict[fac_col] = 1
-            wealth_col = f"Wealth_Screening_Rating_{sim_wealth}"
-            if wealth_col in sim_dict:
-                sim_dict[wealth_col] = 1
-                
-            sim_vec = pd.DataFrame([sim_dict])[ml_feature_names]
-            sim_prob = rf_model.predict_proba(sim_vec)[0, 1]
-            
-            # Strategic ask & channel recommendation
-            if sim_prob >= 0.70:
-                rec_chan = "Leadership Annual Giving / Direct Officer Outreach"
-                rec_color = "#10B981"
-            elif sim_prob >= 0.40:
-                rec_chan = "Personalized Direct Mail & Targeted McDill24 Email"
-                rec_color = "#2563EB"
-            else:
-                rec_chan = "Broad Digital Crowdfunding & Nurture Sequence"
-                rec_color = "#F59E0B"
-                
-            sugg_ask = max(50.0, sim_fy25_amt * 1.25) if sim_fy25_amt > 0 else (1000.0 if 'Tier 1' in sim_wealth or 'Tier 2' in sim_wealth else 100.0)
-            
-            st.markdown(f"""
-            <div style="background: #F8FAFC; border-radius: 8px; padding: 12px 14px; margin-top: 8px; border-left: 4px solid {rec_color};">
-                <div style="font-size: 11px; font-weight: 700; color: #64748B; text-transform: uppercase;">PREDICTED DONATION PROBABILITY:</div>
-                <div style="font-size: 24px; font-weight: 800; color: {rec_color};">{sim_prob*100:.1f}%</div>
-                <div style="font-size: 12px; margin-top: 4px;"><b>Recommended Channel:</b> {rec_chan}</div>
-                <div style="font-size: 12px;"><b>Suggested Ask Target:</b> ${sugg_ask:,.2f}</div>
-            </div>
-            """, unsafe_allow_html=True)
-            
-    # Priority Prospect Call List
-    st.markdown('<div class="section-header">📋 High-Value Uncaptured Prospect Call List (Top 100 Targets)</div>', unsafe_allow_html=True)
-    st.markdown("Alumni who have **NOT** yet donated in FY26, prioritized by Wealth Tier, Prior FY25 Giving, Engagement, and ML Propensity Score:")
-    
-    prospect_pool = non_donors_filt.copy()
-    if len(prospect_pool) > 0:
-        prospect_pool = prospect_pool.sort_values(by=['Predicted_Propensity_Score', 'Giving_Amount_FY25'], ascending=[False, False])
-        
-        top100_prospects = prospect_pool.head(100)[[
-            'Constituent_ID', 'Primary_Faculty', 'Class_Year', 'Wealth_Screening_Rating',
-            'Geographic_Region', 'Giving_Amount_FY25', 'Events_Attended_FY26',
-            'GA4_Giving_Page_Views_FY26', 'Is_Active_Volunteer_FY26', 'Predicted_Propensity_Score'
-        ]].copy()
-        
-        top100_prospects['Predicted_Propensity_Score'] = top100_prospects['Predicted_Propensity_Score'].apply(lambda x: f"{x*100:.1f}%")
-        top100_prospects['Giving_Amount_FY25'] = top100_prospects['Giving_Amount_FY25'].apply(lambda x: f"${x:,.2f}")
-        
-        st.dataframe(top100_prospects, hide_index=True, use_container_width=True)
-        
-        # CSV Export Button
-        csv_export_data = prospect_pool.head(500).to_csv(index=False).encode('utf-8')
-        st.download_button(
-            label="📥 Download Priority Prospect Call List (CSV - Top 500 Leads)",
-            data=csv_export_data,
-            file_name="mcdill_priority_prospect_call_list.csv",
-            mime="text/csv",
-            help="Export prioritized uncaptured prospects for leadership annual giving outreach"
-        )
-    else:
-        st.success("All constituents in current filtered selection have already donated in FY26!")
 
 
 # =============================================================================
@@ -1923,6 +1860,6 @@ with tabs[6]:
 st.markdown("---")
 st.markdown("""
 <div style="text-align: center; color: #94A3B8; font-size: 12px; padding: 12px 0;">
-    McDill University Advancement Analytics Platform | Built with Streamlit, Plotly & Scikit-Learn | FY2026 Reporting Year
+    McDill University Advancement Analytics Platform | Built with Streamlit & Plotly | FY2026 Reporting Year
 </div>
 """, unsafe_allow_html=True)
