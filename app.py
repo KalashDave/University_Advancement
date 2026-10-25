@@ -1,10 +1,11 @@
 """
-McGill University Advancement - Executive Analytics & CASE Intelligence Portal
+McDill University Advancement - Executive Analytics & CASE Intelligence Portal
 File: app.py
-Description: High-contrast Executive Midnight Theme with centered branding,
+Description: High-contrast Executive Midnight Theme with unboxed centered branding,
+             de-cluttered global slicers, intuitive column distribution visualizations,
              interactive plot tooltips, comprehensive KPI multi-line tooltips,
              module strategic overviews, and an interactive CRM dataset snapshot
-             with hoverable column dictionary tooltips.
+             with hoverable column dictionary tooltips (only on landing page).
 """
 
 import streamlit as st
@@ -18,7 +19,7 @@ import os
 # 1. PAGE CONFIGURATION & EXECUTIVE HIGH-CONTRAST DARK THEME
 # =============================================================================
 st.set_page_config(
-    page_title="McGill Advancement Intelligence | FY26",
+    page_title="McDill Advancement Intelligence | FY26",
     page_icon="🎓",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -44,7 +45,7 @@ st.markdown("""
     }
     
     .block-container {
-        padding-top: 1.5rem !important;
+        padding-top: 1.2rem !important;
         padding-bottom: 2.5rem !important;
     }
     
@@ -68,7 +69,7 @@ st.markdown("""
     }
     
     [data-testid="stSubheader"] h3 {
-        font-size: 15px !important;
+        font-size: 14.5px !important;
         font-weight: 700 !important;
         color: #F8FAFC !important;
         line-height: 1.3 !important;
@@ -134,7 +135,7 @@ st.markdown("""
         font-size: 13px !important;
     }
     
-    /* Dataset Snapshot Table Styling with Tooltips */
+    /* Dataset Snapshot Table Styling with Hover Tooltips */
     .table-container {
         overflow-x: auto;
         width: 100%;
@@ -238,8 +239,8 @@ COLUMN_DICTIONARY = {
     'Emails_Opened_FY26': 'Number of delivered advancement emails opened in FY26.',
     'Emails_Clicked_FY26': 'Number of links clicked inside advancement emails in FY26.',
     'GA4_Giving_Page_Views_FY26': 'Google Analytics 4 pageviews recorded on online giving portal in FY26.',
-    'McGill_Connect_Registered': 'Registration flag for official alumni networking platform (1/0).',
-    'McGill_Connect_Logins_FY26': 'Total user logins to alumni networking portal in FY26.',
+    'McGill_Connect_Registered': 'Registration flag for official McDill Connect alumni networking platform (1/0).',
+    'McGill_Connect_Logins_FY26': 'Total user logins to McDill Connect alumni networking portal in FY26.',
     'Lifetime_Events_Attended': 'Cumulative count of university events attended over constituent lifetime.',
     'Events_Registered_FY26': 'Total university events registered for in FY26.',
     'Events_Attended_FY26': 'Total university events attended (in-person or virtual) in FY26.',
@@ -259,7 +260,7 @@ COLUMN_DICTIONARY = {
     'Giving_Amount_FY25': 'Total dollars ($ CAD) donated in FY2025.',
     'Gift_Count_FY26': 'Number of distinct donations recorded in FY2026.',
     'Giving_Amount_FY26': 'Total dollars ($ CAD) donated in FY2026.',
-    'McGill24_Gift_Amount_FY26': 'Dollars donated specifically during the 24-hour giving day blitz in FY26.',
+    'McGill24_Gift_Amount_FY26': 'Dollars donated specifically during the McDill24 24-hour giving day blitz in FY26.',
     'Is_Monthly_Sustainer_FY26': 'Recurring monthly donor flag (1 if Gift_Count_FY26 >= 6, else 0).',
     'Last_Gift_Date': 'Timestamp and calendar date of most recent gift transaction.',
     'Last_Gift_Designation': 'Specific fund, scholarship, or academic chair designated for most recent gift.'
@@ -309,6 +310,20 @@ def load_and_preprocess_advancement_data():
     df['CASE_Volunteer'] = (df['Is_Active_Volunteer_FY26'] == 1).astype(int)
     df['CASE_Communication'] = ((df['Emails_Opened_FY26'] > 0) | (df['McGill_Connect_Logins_FY26'] > 0)).astype(int)
     df['CASE_Pillar_Count'] = (df['CASE_Philanthropic'] + df['CASE_Experiential'] + df['CASE_Volunteer'] + df['CASE_Communication'])
+    
+    # Channel and Designation aliases (McDill branding)
+    df['Display_Channel'] = df['Primary_Solicitation_Channel_FY26'].replace({
+        'Crowdfunding_McGill24': 'Crowdfunding_McDill24',
+        'Email_Digital': 'Digital Solicitation',
+        'Direct_Mail_Letter': 'Direct Mail Letter',
+        'Phonathon_Student_Caller': 'Student Phonathon',
+        'No_Solicitation': 'No Direct Solicitation'
+    })
+    
+    df['Last_Gift_Designation'] = df['Last_Gift_Designation'].replace({
+        'The McGill Fund (Unrestricted)': 'The McDill Fund (Unrestricted)',
+        'Varsity Athletics & Martlets/Redbirds': 'Varsity Athletics & Campus Recreation'
+    })
     
     return df
 
@@ -386,16 +401,13 @@ def render_view_banner(title: str, objective: str, visualizations: list[str]):
 def render_dataset_snapshot_table(df_subset: pd.DataFrame, column_dict: dict):
     """
     Renders an HTML preview table of the first 5 records across all 41 columns.
-    Every column header contains a hover tooltip detailing what the column represents.
+    Every column header contains a hover tooltip detailing what the column represents (without redundant icons).
     """
     headers_html = []
     for col in df_subset.columns:
         desc = column_dict.get(col, "CRM data attribute.")
         th_cell = f"""<th title="{desc}">
-<div style="display: flex; align-items: center; gap: 5px;">
 <span>{col}</span>
-<span style="font-size: 10px; color: #38BDF8;">ℹ️</span>
-</div>
 <div class="th-tooltip">
 <strong style="color: #38BDF8; font-size: 11.5px;">{col}</strong><br>
 {desc}
@@ -413,7 +425,7 @@ def render_dataset_snapshot_table(df_subset: pd.DataFrame, column_dict: dict):
             if pd.isna(val):
                 display_val = '<span style="color: #64748B;">None</span>'
             elif isinstance(val, (float, np.floating)):
-                display_val = f"{val:,.2f}" if val >= 1 else f"{val:.4f}"
+                display_val = f"${val:,.2f}" if "Amount" in col or "Cost" in col else (f"{val:,.2f}" if val >= 1 else f"{val:.4f}")
             elif isinstance(val, (int, np.integer)):
                 display_val = f"{val:,}"
             else:
@@ -437,32 +449,47 @@ def render_dataset_snapshot_table(df_subset: pd.DataFrame, column_dict: dict):
 
 
 # =============================================================================
-# 4. SIDEBAR FILTERS
+# 4. SIDEBAR FILTERS (DE-CLUTTERED WITH DEFAULT 'ALL')
 # =============================================================================
 with st.sidebar:
     st.markdown("### 🔍 Global Slicers")
-    all_faculties = sorted(df_master['Primary_Faculty'].unique().tolist())
-    selected_faculties = st.multiselect("Academic Faculty", options=all_faculties, default=all_faculties)
     
+    # 1. Academic Faculty
+    all_faculties = sorted(df_master['Primary_Faculty'].unique().tolist())
+    faculty_options = ['All Faculties'] + all_faculties
+    selected_faculties = st.multiselect("Academic Faculty", options=faculty_options, default=['All Faculties'], placeholder="All Faculties")
+    
+    # 2. Cohort Selector
     cohort_options = ['All Cohorts', 'Young Alumni (<10 yrs)', 'Mid-Career (10-25 yrs)', 'Senior Alumni (25+ yrs)']
     quick_cohort = st.selectbox("Cohort Selector", options=cohort_options, index=0)
     
+    # 3. Geographic Region
     all_regions = ['Quebec', 'Rest of Canada', 'United States', 'International']
-    selected_regions = st.multiselect("Geographic Region", options=all_regions, default=all_regions)
+    region_options = ['All Regions'] + all_regions
+    selected_regions = st.multiselect("Geographic Region", options=region_options, default=['All Regions'], placeholder="All Regions")
     
+    # 4. Wealth Capacity Tier
     all_tiers = ['Tier 1: $100k+', 'Tier 2: $25k-$99k', 'Tier 3: $5k-$24k', 'Tier 4: $1k-$4.9k', 'Tier 5: Under $1k', 'Unrated']
-    selected_tiers = st.multiselect("Wealth Capacity Tier", options=all_tiers, default=all_tiers)
+    tier_options = ['All Tiers'] + all_tiers
+    selected_tiers = st.multiselect("Wealth Capacity Tier", options=tier_options, default=['All Tiers'], placeholder="All Tiers")
     
     if st.button("Reset Filters", use_container_width=True):
         st.rerun()
 
-# Apply filters
+# Apply de-cluttered filters
 filtered_df = df_master.copy()
-filtered_df = filtered_df[filtered_df['Primary_Faculty'].isin(selected_faculties)]
-filtered_df = filtered_df[filtered_df['Geographic_Region'].isin(selected_regions)]
-filtered_df = filtered_df[filtered_df['Wealth_Screening_Rating'].isin(selected_tiers)]
+
+if 'All Faculties' not in selected_faculties and len(selected_faculties) > 0:
+    filtered_df = filtered_df[filtered_df['Primary_Faculty'].isin(selected_faculties)]
+
 if quick_cohort != 'All Cohorts':
     filtered_df = filtered_df[filtered_df['Graduation_Cohort'] == quick_cohort]
+
+if 'All Regions' not in selected_regions and len(selected_regions) > 0:
+    filtered_df = filtered_df[filtered_df['Geographic_Region'].isin(selected_regions)]
+
+if 'All Tiers' not in selected_tiers and len(selected_tiers) > 0:
+    filtered_df = filtered_df[filtered_df['Wealth_Screening_Rating'].isin(selected_tiers)]
 
 n_filtered = len(filtered_df)
 if n_filtered == 0:
@@ -484,12 +511,12 @@ roi_mult = (tot_rev_fy26 / tot_cost) if tot_cost > 0 else 0.0
 
 
 # =============================================================================
-# 5. CENTERED HEADLINE BRANDING & MODULE SELECTOR
+# 5. UNBOXED CENTERED BRANDING & MODULE SELECTOR
 # =============================================================================
-centered_branding_html = """<div style="text-align: center; max-width: 920px; margin: 0 auto 20px auto; padding: 22px 24px 18px 24px; background: linear-gradient(135deg, rgba(30, 41, 59, 0.75) 0%, rgba(15, 23, 42, 0.85) 100%); border: 1px solid #334155; border-radius: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.35);">
+centered_branding_html = """<div style="text-align: center; margin: 0 auto 24px auto; padding: 10px 0;">
 <div style="display: flex; justify-content: center; margin-bottom: 12px;">
-<div style="display: flex; align-items: center; justify-content: center; width: 66px; height: 66px; background: #0F172A; border: 2px solid #475569; border-radius: 16px; box-shadow: 0 4px 14px rgba(0,0,0,0.4);">
-<svg width="44" height="44" viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg">
+<div style="display: flex; align-items: center; justify-content: center; width: 68px; height: 68px; background: #0F172A; border: 2px solid #334155; border-radius: 18px; box-shadow: 0 4px 16px rgba(0,0,0,0.4);">
+<svg width="46" height="46" viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <linearGradient id="crestGrad" x1="0" y1="0" x2="54" y2="54" gradientUnits="userSpaceOnUse">
 <stop offset="0%" stop-color="#ED1B2F"/>
@@ -508,14 +535,14 @@ centered_branding_html = """<div style="text-align: center; max-width: 920px; ma
 </svg>
 </div>
 </div>
-<div style="font-size: 32px; font-weight: 800; color: #FFFFFF; letter-spacing: -0.025em; line-height: 1.2; margin-bottom: 8px;">
-McGill University Advancement Intelligence
+<div style="font-size: 38px; font-weight: 800; color: #FFFFFF; letter-spacing: -0.03em; line-height: 1.2; margin-bottom: 8px;">
+McDill University Advancement Intelligence
 </div>
-<div style="font-size: 14.5px; color: #94A3B8; line-height: 1.5; max-width: 820px; margin: 0 auto;">
+<div style="font-size: 15px; color: #94A3B8; line-height: 1.5; max-width: 820px; margin: 0 auto;">
 An enterprise institutional advancement intelligence platform providing strategic decision-support for university leadership, tracking multi-year philanthropic revenue velocity, alumni donor lifecycle migration, marketing campaign ROI, and CASE 4-pillar engagement.
 </div>
-<div style="margin-top: 12px; font-size: 13.5px;">
-👉 <a href="#dataset-snapshot" style="color: #38BDF8; font-weight: 600; text-decoration: underline; text-underline-offset: 4px; transition: color 0.2s ease;">
+<div style="margin-top: 12px; font-size: 14px;">
+👉 <a href="#dataset-snapshot" style="color: #38BDF8; font-weight: 600; text-decoration: underline; text-underline-offset: 4px;">
 Want to inspect the underlying CRM dataset and column dictionary? Click here to view the data snapshot & schema ↓
 </a>
 </div>
@@ -537,8 +564,7 @@ selected_module = st.selectbox(
     index=0
 )
 
-st.caption(f"Active Universe Filter Scope: **{n_filtered:,} Records** | **${tot_rev_fy26/1e6:.2f}M Commitments** | **{donors_fy26:,} Active Donors**")
-st.markdown("---")
+st.markdown("<div style='margin-bottom: 12px;'></div>", unsafe_allow_html=True)
 
 
 # =============================================================================
@@ -548,12 +574,13 @@ if selected_module == "📊 Executive Overview (Landing Dashboard)":
     
     render_view_banner(
         title="📊 Executive Overview Dashboard",
-        objective="Provides a unified single-pane executive summary of McGill University's overall philanthropic health, pacing toward annual strategic targets, and holistic alumni engagement.",
+        objective="Provides a unified single-pane executive summary of McDill University's overall philanthropic health, pacing toward annual strategic targets, and holistic alumni engagement across all key data dimensions.",
         visualizations=[
             "6 Top-line institutional KPIs with YoY deltas and detailed benchmarks",
-            "Multi-year revenue velocity (FY24–FY26) and Top 5 faculty commitments",
-            "Gift designation allocation share and CASE 4-pillar engagement distribution",
-            "McGill24 Giving Day blitz yield, monthly recurring sustainers, and annual goal pacing"
+            "Multi-year revenue velocity (FY24–FY26) and Gift designation allocation share",
+            "Academic faculty constituent distribution and Graduation cohort vs. Degree level breakdown",
+            "CASE 4-pillar engagement depth, Wealth screening capacity tiers, and Geographic region vs. Language preferences",
+            "Giving amount tier Pareto brackets, Solicitation channel performance, and McDill24 blitz milestones"
         ]
     )
     
@@ -635,13 +662,15 @@ if selected_module == "📊 Executive Overview (Landing Dashboard)":
             
     st.markdown("<div style='margin-bottom: 8px;'></div>", unsafe_allow_html=True)
     
-    # Main Grid (Left 60% Activity & Table, Right 40% Dual Donut Charts)
-    col_left, col_right = st.columns([1.25, 0.75])
+    # -------------------------------------------------------------------------
+    # SUITE 1: REVENUE VELOCITY & GIFT DESIGNATION ALLOCATION
+    # -------------------------------------------------------------------------
+    row1_c1, row1_c2 = st.columns([1.2, 0.8])
     
-    with col_left:
+    with row1_c1:
         with st.container(border=True):
             st.subheader(
-                "Development Activity (FY24 – FY26)",
+                "Development Revenue Velocity (FY24 – FY26)",
                 help="Tracks multi-year philanthropic revenue velocity across fiscal years FY2024 through FY2026 ($ CAD). Displays annual giving momentum as a shaded velocity area to highlight year-over-year fundraising growth and campaign pacing."
             )
             st.caption("Multi-year philanthropic revenue velocity ($ CAD)")
@@ -664,32 +693,13 @@ if selected_module == "📊 Executive Overview (Landing Dashboard)":
                 hovertemplate="<b>%{x}</b><br>Revenue: %{y:$,.0f}<extra></extra>"
             ))
             fig_area.update_yaxes(tickformat='$,.0s')
-            apply_dark_theme(fig_area, height=210)
+            apply_dark_theme(fig_area, height=220)
             st.plotly_chart(fig_area, use_container_width=True)
-            
-            st.subheader(
-                "Faculty Commitments Summary",
-                help="Summarizes philanthropic performance across the top 5 academic faculties in FY26. Displays total active donor headcount, total revenue commitments ($ CAD), and each faculty's proportional share of all gifts."
-            )
-            fac_summary = filtered_df.groupby('Primary_Faculty').agg(
-                Donors=('Gift_Count_FY26', lambda x: (x > 0).sum()),
-                Commitments=('Giving_Amount_FY26', 'sum')
-            ).reset_index().sort_values(by='Commitments', ascending=False).head(5)
-            
-            fac_summary['Share'] = (fac_summary['Commitments'] / tot_rev_fy26 * 100).apply(lambda x: f"{x:.1f}%")
-            fac_summary['Commitments'] = fac_summary['Commitments'].apply(lambda x: f"${x:,.0f}")
-            fac_summary['Donors'] = fac_summary['Donors'].apply(lambda x: f"{x:,}")
-            
-            st.dataframe(
-                fac_summary[['Primary_Faculty', 'Donors', 'Commitments', 'Share']],
-                hide_index=True,
-                use_container_width=True
-            )
 
-    with col_right:
+    with row1_c2:
         with st.container(border=True):
             st.subheader(
-                "Gift Designation Share",
+                "Gift Designation Allocation Share",
                 help="Visualizes the allocation of FY26 philanthropic gifts across university priority funds, student aid, and academic departments. Displays the percentage share of total dollars directed to unrestricted versus designated causes."
             )
             desig_df = filtered_df[filtered_df['Giving_Amount_FY26'] > 0].groupby('Last_Gift_Designation')['Giving_Amount_FY26'].sum().reset_index()
@@ -698,7 +708,7 @@ if selected_module == "📊 Executive Overview (Landing Dashboard)":
                 names='Last_Gift_Designation',
                 values='Giving_Amount_FY26',
                 hole=0.62,
-                color_discrete_sequence=['#34D399', '#38BDF8', '#818CF8', '#FBBF24', '#F87171']
+                color_discrete_sequence=['#34D399', '#38BDF8', '#818CF8', '#FBBF24', '#F43F5E']
             )
             fig_d1.update_traces(
                 textposition='inside',
@@ -707,8 +717,8 @@ if selected_module == "📊 Executive Overview (Landing Dashboard)":
                 hovertemplate="<b>%{label}</b><br>%{value:$,.0f} (%{percent})<extra></extra>"
             )
             fig_d1.update_layout(
-                height=185,
-                margin=dict(l=10, r=10, t=5, b=5),
+                height=220,
+                margin=dict(l=10, r=10, t=10, b=10),
                 showlegend=True,
                 legend=dict(orientation="h", y=-0.15, font=dict(size=9, color="#CBD5E1")),
                 paper_bgcolor="rgba(0,0,0,0)",
@@ -716,10 +726,65 @@ if selected_module == "📊 Executive Overview (Landing Dashboard)":
                 font=dict(color="#CBD5E1")
             )
             st.plotly_chart(fig_d1, use_container_width=True)
-            
+
+    # -------------------------------------------------------------------------
+    # SUITE 2: DEMOGRAPHIC & ACADEMIC DISTRIBUTIONS
+    # -------------------------------------------------------------------------
+    row2_c1, row2_c2 = st.columns([1.1, 0.9])
+    
+    with row2_c1:
         with st.container(border=True):
             st.subheader(
-                "CASE 4-Pillar Engagement",
+                "Academic Faculty Constituent Distribution",
+                help="Displays the distribution of addressable constituents across all academic divisions and faculties. Highlights the relative scale of alumni populations and donor concentrations across Management, Science, Medicine, Arts, and Engineering."
+            )
+            fac_counts = filtered_df.groupby('Primary_Faculty').size().reset_index(name='Constituents').sort_values('Constituents', ascending=True)
+            fig_fac = px.bar(
+                fac_counts,
+                x='Constituents',
+                y='Primary_Faculty',
+                orientation='h',
+                color_discrete_sequence=['#38BDF8'],
+                text=fac_counts['Constituents'].apply(lambda x: f"{x:,}")
+            )
+            fig_fac.update_traces(textposition='outside')
+            fig_fac.update_yaxes(title_text='')
+            fig_fac.update_xaxes(title_text='Total Alumni Count')
+            apply_dark_theme(fig_fac, height=260)
+            st.plotly_chart(fig_fac, use_container_width=True)
+
+    with row2_c2:
+        with st.container(border=True):
+            st.subheader(
+                "Graduation Cohort & Degree Level Distribution",
+                help="Analyzes constituent distribution across graduation eras (Young Alumni, Mid-Career, Senior) partitioned by highest degree attained (Undergraduate, Masters, PhD, MD/JD). Illustrates demographic maturation across the alumni base."
+            )
+            cohort_deg = filtered_df.groupby(['Graduation_Cohort', 'Primary_Degree_Type']).size().reset_index(name='Count')
+            fig_cd = px.bar(
+                cohort_deg,
+                x='Graduation_Cohort',
+                y='Count',
+                color='Primary_Degree_Type',
+                barmode='group',
+                color_discrete_sequence=['#60A5FA', '#34D399', '#FBBF24', '#F43F5E']
+            )
+            fig_cd.update_layout(
+                legend=dict(orientation="h", y=1.12, x=0, font=dict(size=9.5, color="#CBD5E1"), title=None),
+                xaxis=dict(title=''),
+                yaxis=dict(title='Constituents')
+            )
+            apply_dark_theme(fig_cd, height=260)
+            st.plotly_chart(fig_cd, use_container_width=True)
+
+    # -------------------------------------------------------------------------
+    # SUITE 3: ENGAGEMENT, WEALTH, & GEOGRAPHIC DISTRIBUTIONS
+    # -------------------------------------------------------------------------
+    row3_c1, row3_c2, row3_c3 = st.columns([1, 1, 1])
+    
+    with row3_c1:
+        with st.container(border=True):
+            st.subheader(
+                "CASE 4-Pillar Engagement Depth",
                 help="Measures constituent relationship depth across the CASE Alumni Engagement Metrics framework (Philanthropic, Experiential, Volunteer, Communication). Displays the percentage of alumni engaged across 0, 1, 2, 3, or all 4 engagement modes."
             )
             aem_counts = filtered_df['CASE_Pillar_Count'].value_counts().sort_index().reset_index()
@@ -748,8 +813,8 @@ if selected_module == "📊 Executive Overview (Landing Dashboard)":
                 hovertemplate="<b>%{label}</b><br>%{value:,} Alumni (%{percent})<extra></extra>"
             )
             fig_d2.update_layout(
-                height=185,
-                margin=dict(l=10, r=10, t=5, b=5),
+                height=230,
+                margin=dict(l=10, r=10, t=10, b=10),
                 showlegend=True,
                 legend=dict(orientation="h", y=-0.15, font=dict(size=9, color="#CBD5E1")),
                 paper_bgcolor="rgba(0,0,0,0)",
@@ -758,8 +823,110 @@ if selected_module == "📊 Executive Overview (Landing Dashboard)":
             )
             st.plotly_chart(fig_d2, use_container_width=True)
 
-    # Bottom Row: 3 Secondary Metric Cards
-    mcgill24_rev = filtered_df['McGill24_Gift_Amount_FY26'].sum()
+    with row3_c2:
+        with st.container(border=True):
+            st.subheader(
+                "Wealth Screening Capacity Tiers",
+                help="Displays the distribution of alumni across third-party wealth screening ratings from Tier 1 ($100k+) through Tier 5 (Under $1k) and Unrated. Illustrates the pipeline volume available for leadership and major gift qualification."
+            )
+            w_order = ['Tier 1: $100k+', 'Tier 2: $25k-$99k', 'Tier 3: $5k-$24k', 'Tier 4: $1k-$4.9k', 'Tier 5: Under $1k', 'Unrated']
+            w_df = filtered_df['Wealth_Screening_Rating'].value_counts().reindex(w_order).fillna(0).reset_index()
+            w_df.columns = ['Rating', 'Count']
+            fig_w = px.bar(
+                w_df,
+                x='Rating',
+                y='Count',
+                color_discrete_sequence=['#818CF8'],
+                text=w_df['Count'].apply(lambda x: f"{int(x):,}")
+            )
+            fig_w.update_traces(textposition='outside')
+            fig_w.update_xaxes(title_text='', tickangle=-25)
+            fig_w.update_yaxes(title_text='Prospects')
+            apply_dark_theme(fig_w, height=230)
+            st.plotly_chart(fig_w, use_container_width=True)
+
+    with row3_c3:
+        with st.container(border=True):
+            st.subheader(
+                "Geographic & Language Preference",
+                help="Displays the geographic footprint of constituents (Quebec, Rest of Canada, United States, and International) partitioned by official language preference (EN vs. FR). Informs regional and bilingual solicitation strategy."
+            )
+            geo_lang = filtered_df.groupby(['Geographic_Region', 'Preferred_Language']).size().reset_index(name='Count')
+            fig_gl = px.bar(
+                geo_lang,
+                x='Geographic_Region',
+                y='Count',
+                color='Preferred_Language',
+                barmode='stack',
+                color_discrete_sequence=['#38BDF8', '#F43F5E']
+            )
+            fig_gl.update_layout(
+                legend=dict(orientation="h", y=1.12, x=0, font=dict(size=9.5, color="#CBD5E1"), title=None),
+                xaxis=dict(title=''),
+                yaxis=dict(title='Constituents')
+            )
+            apply_dark_theme(fig_gl, height=230)
+            st.plotly_chart(fig_gl, use_container_width=True)
+
+    # -------------------------------------------------------------------------
+    # SUITE 4: GIVING TIER PARETO & SOLICITATION CHANNELS
+    # -------------------------------------------------------------------------
+    row4_c1, row4_c2 = st.columns([1, 1])
+    
+    with row4_c1:
+        with st.container(border=True):
+            st.subheader(
+                "Giving Tier Distribution (Pareto Brackets)",
+                help="Visualizes the Pareto distribution of FY26 giving amount tiers from grassroots (<$100) to major gifts ($10k+). Highlights revenue concentration and gift pyramid structure."
+            )
+            tier_agg = filtered_df[filtered_df['Giving_Amount_FY26'] > 0].copy()
+            tier_agg['Tier'] = pd.cut(
+                tier_agg['Giving_Amount_FY26'],
+                bins=[-np.inf, 100, 500, 2500, 10000, np.inf],
+                labels=['<$100', '$100-$499', '$500-$2.4k', '$2.5k-$9.9k', '$10k+']
+            )
+            t_data = tier_agg.groupby('Tier', observed=True)['Giving_Amount_FY26'].sum().reset_index()
+            fig_tier = px.bar(
+                t_data,
+                x='Tier',
+                y='Giving_Amount_FY26',
+                color_discrete_sequence=['#34D399'],
+                text=t_data['Giving_Amount_FY26'].apply(lambda x: f"${x/1e3:,.0f}k")
+            )
+            fig_tier.update_traces(textposition='outside')
+            fig_tier.update_yaxes(title_text='Total Raised ($ CAD)')
+            fig_tier.update_xaxes(title_text='Giving Bracket')
+            apply_dark_theme(fig_tier, height=250)
+            st.plotly_chart(fig_tier, use_container_width=True)
+
+    with row4_c2:
+        with st.container(border=True):
+            st.subheader(
+                "Primary Solicitation Channel Conversion",
+                help="Visualizes constituent distribution across assigned solicitation channels (Digital, Direct Mail, Student Phonathon, Crowdfunding) and their respective conversion rates. Evaluates channel reach and appeal effectiveness."
+            )
+            chan_summary = filtered_df.groupby('Display_Channel').agg(
+                Donors=('Gift_Count_FY26', lambda x: (x > 0).sum()),
+                Total=('Constituent_ID', 'count')
+            ).reset_index()
+            chan_summary['Conv'] = chan_summary['Donors'] / chan_summary['Total'] * 100
+            fig_chan = px.bar(
+                chan_summary,
+                x='Display_Channel',
+                y='Conv',
+                color_discrete_sequence=['#2DD4BF'],
+                text=chan_summary['Conv'].apply(lambda x: f"{x:.1f}%")
+            )
+            fig_chan.update_traces(textposition='outside')
+            fig_chan.update_yaxes(title_text='Conversion Rate (%)')
+            fig_chan.update_xaxes(title_text='', tickangle=-15)
+            apply_dark_theme(fig_chan, height=250)
+            st.plotly_chart(fig_chan, use_container_width=True)
+
+    # -------------------------------------------------------------------------
+    # SUITE 5: BOTTOM ROW SECONDARY METRIC CARDS
+    # -------------------------------------------------------------------------
+    mcdill24_rev = filtered_df['McGill24_Gift_Amount_FY26'].sum()
     sustainers_cnt = (filtered_df['Is_Monthly_Sustainer_FY26'] == 1).sum()
     target_goal = 4000000.0
     pct_goal = (tot_rev_fy26 / target_goal * 100)
@@ -768,9 +935,9 @@ if selected_module == "📊 Executive Overview (Landing Dashboard)":
     with b1:
         with st.container(border=True):
             st.metric(
-                label="McGill24 Giving Day",
-                value=f"${mcgill24_rev/1e3:,.0f}K",
-                delta=f"{(mcgill24_rev/tot_rev_fy26*100):.1f}% Share of Total",
+                label="McDill24 Giving Day",
+                value=f"${mcdill24_rev/1e3:,.0f}K",
+                delta=f"{(mcdill24_rev/tot_rev_fy26*100):.1f}% Share of Total",
                 help=format_tooltip(
                     description="Philanthropic revenue secured during the university's annual 24-hour digital giving campaign.",
                     calculation="Sum of McGill24_Gift_Amount_FY26 across all participating alumni.",
@@ -802,6 +969,35 @@ if selected_module == "📊 Executive Overview (Landing Dashboard)":
                 )
             )
 
+    # -------------------------------------------------------------------------
+    # SUITE 6: CRM DATASET SNAPSHOT (RENDERED ONLY ON LANDING PAGE)
+    # -------------------------------------------------------------------------
+    st.markdown("<div id='dataset-snapshot' style='padding-top: 24px;'></div>", unsafe_allow_html=True)
+    st.markdown("---")
+    
+    with st.container(border=True):
+        st.subheader(
+            "📋 CRM Dataset Snapshot & Interactive Column Dictionary",
+            help="Displays an exploratory snapshot of the underlying institutional advancement CRM dataset across all 41 constituent attributes. Hover over any column header to view its business definition and usage."
+        )
+        st.caption("Showing the first 5 records across all 41 columns. **Hover over any column header** to inspect its data definition in a few words.")
+        
+        # 5 Sample rows from raw CRM
+        snapshot_subset = df_master[[c for c in COLUMN_DICTIONARY.keys() if c in df_master.columns]].head(5)
+        snapshot_table_html = render_dataset_snapshot_table(snapshot_subset, COLUMN_DICTIONARY)
+        st.markdown(snapshot_table_html, unsafe_allow_html=True)
+        
+        with st.expander("📖 View Complete Column Dictionary (All 41 CRM Attributes)"):
+            dict_data = [
+                {
+                    "Column Name": col,
+                    "Data Type": str(df_master[col].dtype) if col in df_master.columns else "N/A",
+                    "Business Definition & Scope": desc
+                }
+                for col, desc in COLUMN_DICTIONARY.items()
+            ]
+            st.dataframe(pd.DataFrame(dict_data), hide_index=True, use_container_width=True)
+
 
 # =============================================================================
 # VIEW 2: PHILANTHROPIC HEALTH & REVENUE
@@ -812,14 +1008,14 @@ elif selected_module == "🏛️ Philanthropic Health & Revenue":
         title="🏛️ Philanthropic Health & Commitments",
         objective="Performs an in-depth financial evaluation of university fundraising yield, multi-year revenue growth velocity, and giving tier concentration to evaluate long-term financial stability.",
         visualizations=[
-            "Core revenue metrics: Total commitments, average gift yield, and McGill24 Giving Day yield",
+            "Core revenue metrics: Total commitments, average gift yield, and McDill24 Giving Day yield",
             "Multi-year trajectory bar chart comparing FY24, FY25, and FY26 fundraising totals",
             "Giving tier Pareto dispersion (<$100 to $10k+) showing gift volume and revenue distribution"
         ]
     )
     
     p1, p2, p3 = st.columns(3)
-    mcgill24_rev = filtered_df['McGill24_Gift_Amount_FY26'].sum()
+    mcdill24_rev = filtered_df['McGill24_Gift_Amount_FY26'].sum()
     with p1:
         with st.container(border=True):
             st.metric(
@@ -847,9 +1043,9 @@ elif selected_module == "🏛️ Philanthropic Health & Revenue":
     with p3:
         with st.container(border=True):
             st.metric(
-                label="McGill24 Campaign",
-                value=f"${mcgill24_rev:,.0f}",
-                delta=f"{(mcgill24_rev/tot_rev_fy26*100):.1f}% Share",
+                label="McDill24 Campaign",
+                value=f"${mcdill24_rev:,.0f}",
+                delta=f"{(mcdill24_rev/tot_rev_fy26*100):.1f}% Share",
                 help=format_tooltip(
                     description="Philanthropic commitments mobilized during the 24-hour university-wide blitz.",
                     calculation="Sum of McGill24_Gift_Amount_FY26 across all giving day transactions.",
@@ -891,7 +1087,7 @@ elif selected_module == "🏛️ Philanthropic Health & Revenue":
             )
             t_data = tier_agg.groupby('Tier', observed=True)['Giving_Amount_FY26'].sum().reset_index()
             fig_tier = px.bar(t_data, x='Tier', y='Giving_Amount_FY26', color_discrete_sequence=['#38BDF8'])
-            fig_tier.update_yaxes(title_text='Total Raised ($)')
+            fig_tier.update_yaxes(title_text='Total Raised ($ CAD)')
             apply_dark_theme(fig_tier, height=270)
             st.plotly_chart(fig_tier, use_container_width=True)
 
@@ -1312,37 +1508,7 @@ elif selected_module == "💎 Prospect Capacity & Faculty Intelligence":
 
 
 # =============================================================================
-# 6. CRM DATASET SNAPSHOT & INTERACTIVE COLUMN DICTIONARY (BOTTOM OF PAGE)
-# =============================================================================
-st.markdown("<div id='dataset-snapshot' style='padding-top: 24px;'></div>", unsafe_allow_html=True)
-st.markdown("---")
-
-with st.container(border=True):
-    st.subheader(
-        "📋 CRM Dataset Snapshot & Interactive Column Dictionary",
-        help="Displays an exploratory snapshot of the underlying institutional advancement CRM dataset across all 41 constituent attributes. Hover over any column header to view its business definition and usage."
-    )
-    st.caption("Showing the first 5 records across all 41 columns. **Hover over any column header** to inspect its data definition in a few words.")
-    
-    # 5 Sample rows from raw CRM
-    snapshot_subset = df_master[[c for c in COLUMN_DICTIONARY.keys() if c in df_master.columns]].head(5)
-    snapshot_table_html = render_dataset_snapshot_table(snapshot_subset, COLUMN_DICTIONARY)
-    st.markdown(snapshot_table_html, unsafe_allow_html=True)
-    
-    with st.expander("📖 View Complete Column Dictionary (All 41 CRM Attributes)"):
-        dict_data = [
-            {
-                "Column Name": col,
-                "Data Type": str(df_master[col].dtype) if col in df_master.columns else "N/A",
-                "Business Definition & Scope": desc
-            }
-            for col, desc in COLUMN_DICTIONARY.items()
-        ]
-        st.dataframe(pd.DataFrame(dict_data), hide_index=True, use_container_width=True)
-
-
-# =============================================================================
 # 7. MINIMAL FOOTER
 # =============================================================================
 st.markdown("---")
-st.caption("McGill University Advancement Analytics • High-Contrast Executive Dashboard • FY2026 Reporting Year")
+st.caption("McDill University Advancement Analytics • High-Contrast Executive Dashboard • FY2026 Reporting Year")
