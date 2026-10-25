@@ -56,6 +56,7 @@ st.markdown("""
         border-radius: 12px !important;
         box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25) !important;
         padding: 6px !important;
+        height: 100% !important;
     }
     
     [data-testid="stVerticalBlockBorderWrapper"]:hover {
@@ -69,37 +70,44 @@ st.markdown("""
     }
     
     [data-testid="stSubheader"] h3 {
-        font-size: 14.5px !important;
+        font-size: 15px !important;
         font-weight: 700 !important;
         color: #F8FAFC !important;
-        line-height: 1.3 !important;
+        line-height: 1.35 !important;
         margin: 0 !important;
     }
     
-    /* Ultra-Crisp Metric Typography */
+    /* Ultra-Crisp Metric Typography (12px KPI Name Labels) */
     [data-testid="stMetric"] {
-        padding: 5px 4px !important;
+        padding: 6px 6px !important;
     }
     
     [data-testid="stMetricLabel"] {
-        font-size: 10px !important;
+        font-size: 12px !important;
         font-weight: 700 !important;
         color: #94A3B8 !important;
         text-transform: uppercase !important;
-        letter-spacing: 0.01em !important;
-        white-space: nowrap !important;
+        letter-spacing: 0.02em !important;
+        white-space: normal !important;
+        min-height: 30px !important;
+        display: flex !important;
+        align-items: center !important;
     }
     
     [data-testid="stMetricLabel"] > div:first-child {
         overflow: visible !important;
+        white-space: normal !important;
+        flex: 1 !important;
     }
     
     [data-testid="stMetricLabel"] p {
-        font-size: 10px !important;
+        font-size: 12px !important;
         font-weight: 700 !important;
-        letter-spacing: 0.01em !important;
+        letter-spacing: 0.02em !important;
+        line-height: 1.25 !important;
         overflow: visible !important;
-        white-space: nowrap !important;
+        white-space: normal !important;
+        text-overflow: clip !important;
         margin: 0 !important;
     }
     
@@ -115,14 +123,20 @@ st.markdown("""
         font-weight: 700 !important;
     }
     
+    /* Captions & Annotations */
+    [data-testid="stCaptionContainer"] p, .stCaption p {
+        font-size: 12.5px !important;
+        color: #94A3B8 !important;
+    }
+    
     /* Tooltip / Help Target Icon Styling */
     [data-testid="stTooltipHoverTarget"] {
         color: #94A3B8 !important;
-        margin-left: 2px !important;
+        margin-left: 3px !important;
     }
     [data-testid="stTooltipHoverTarget"] svg {
-        width: 13px !important;
-        height: 13px !important;
+        width: 13.5px !important;
+        height: 13.5px !important;
     }
     [data-testid="stTooltipHoverTarget"]:hover {
         color: #38BDF8 !important;
@@ -132,6 +146,7 @@ st.markdown("""
         border: 1px solid #475569 !important;
         color: #F8FAFC !important;
         font-size: 12.5px !important;
+        line-height: 1.45 !important;
         border-radius: 8px !important;
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5) !important;
     }
@@ -168,7 +183,7 @@ st.markdown("""
     .snapshot-table {
         width: max-content;
         border-collapse: collapse;
-        font-size: 11.5px;
+        font-size: 12px;
         text-align: left;
     }
     
@@ -195,16 +210,16 @@ st.markdown("""
         position: absolute;
         top: 100%;
         left: 0;
-        min-width: 220px;
-        max-width: 300px;
+        min-width: 240px;
+        max-width: 320px;
         background-color: #020617;
         color: #F8FAFC;
         border: 1.5px solid #38BDF8;
         border-radius: 6px;
-        padding: 8px 12px;
-        font-size: 11.5px;
+        padding: 9px 13px;
+        font-size: 12px;
         font-weight: normal;
-        line-height: 1.4;
+        line-height: 1.45;
         white-space: normal;
         z-index: 99999;
         box-shadow: 0 10px 28px rgba(0, 0, 0, 0.75);
@@ -379,7 +394,7 @@ def apply_dark_theme(fig, height=270):
     Applies high-contrast dark theme styling with crystal-clear visibility.
     """
     fig.update_layout(
-        font=dict(family="Inter, -apple-system, sans-serif", size=11, color="#CBD5E1"),
+        font=dict(family="Inter, -apple-system, sans-serif", size=11.5, color="#CBD5E1"),
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
         height=height,
@@ -387,14 +402,14 @@ def apply_dark_theme(fig, height=270):
         hovermode="closest",
         hoverlabel=dict(
             bgcolor="#020617",
-            font_size=11,
+            font_size=11.5,
             font_color="#FFFFFF",
             font_family="Inter, sans-serif",
             bordercolor="#475569"
         )
     )
-    fig.update_xaxes(showgrid=True, gridcolor="#334155", tickfont=dict(size=10, color="#94A3B8"), zeroline=False)
-    fig.update_yaxes(showgrid=True, gridcolor="#334155", tickfont=dict(size=10, color="#94A3B8"), zeroline=False)
+    fig.update_xaxes(showgrid=True, gridcolor="#334155", tickfont=dict(size=10.5, color="#94A3B8"), zeroline=False)
+    fig.update_yaxes(showgrid=True, gridcolor="#334155", tickfont=dict(size=10.5, color="#94A3B8"), zeroline=False)
     return fig
 
 
@@ -422,15 +437,15 @@ def render_view_banner(title: str, objective: str, visualizations: list[str] = N
     - Otherwise, renders a clean, single-column scope & objective banner without redundant plot lists.
     """
     if visualizations and len(visualizations) > 0:
-        items_html = "".join([f"<li style='margin-bottom: 4px; color: #CBD5E1;'>{item}</li>" for item in visualizations])
+        items_html = "".join([f"<li style='margin-bottom: 5px; color: #CBD5E1;'>{item}</li>" for item in visualizations])
         content_html = f"""<div style="display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 20px;">
 <div>
-<div style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Module Scope & Objective</div>
-<div style="font-size: 13px; color: #E2E8F0; line-height: 1.5;">{objective}</div>
+<div style="font-size: 11.5px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px;">Module Scope & Objective</div>
+<div style="font-size: 14px; color: #E2E8F0; line-height: 1.55;">{objective}</div>
 </div>
 <div>
-<div style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Key Analytics & Visualizations</div>
-<ul style="margin: 0; padding-left: 16px; font-size: 12.5px; line-height: 1.45;">
+<div style="font-size: 11.5px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px;">Key Analytics & Visualizations</div>
+<ul style="margin: 0; padding-left: 16px; font-size: 13.5px; line-height: 1.5;">
 {items_html}
 </ul>
 </div>
@@ -438,28 +453,28 @@ def render_view_banner(title: str, objective: str, visualizations: list[str] = N
     elif pillars and len(pillars) > 0:
         pillar_cards = []
         for p in pillars:
-            p_card = f"""<div style="background: #0F172A; border: 1px solid #334155; border-radius: 8px; padding: 10px 12px;">
-<div style="font-size: 13px; font-weight: 700; color: #FFFFFF; margin-bottom: 4px;">{p['icon']} {p['name']}</div>
-<div style="font-size: 11.5px; color: #94A3B8; line-height: 1.4;">{p['desc']}</div>
+            p_card = f"""<div style="background: #0F172A; border: 1px solid #334155; border-radius: 8px; padding: 12px 14px;">
+<div style="font-size: 13.5px; font-weight: 700; color: #FFFFFF; margin-bottom: 4px;">{p['icon']} {p['name']}</div>
+<div style="font-size: 12.5px; color: #94A3B8; line-height: 1.45;">{p['desc']}</div>
 </div>"""
             pillar_cards.append(p_card)
         pillars_grid = "".join(pillar_cards)
         content_html = f"""<div>
-<div style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Module Scope & Objective</div>
-<div style="font-size: 13px; color: #E2E8F0; line-height: 1.5; margin-bottom: 12px;">{objective}</div>
-<div style="font-size: 11px; font-weight: 700; color: #38BDF8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">The 4 CASE AEM Engagement Pillars</div>
+<div style="font-size: 11.5px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px;">Module Scope & Objective</div>
+<div style="font-size: 14px; color: #E2E8F0; line-height: 1.55; margin-bottom: 14px;">{objective}</div>
+<div style="font-size: 11.5px; font-weight: 700; color: #38BDF8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">The 4 CASE AEM Engagement Pillars</div>
 <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
 {pillars_grid}
 </div>
 </div>"""
     else:
         content_html = f"""<div>
-<div style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Module Scope & Objective</div>
-<div style="font-size: 13.5px; color: #E2E8F0; line-height: 1.5;">{objective}</div>
+<div style="font-size: 11.5px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px;">Module Scope & Objective</div>
+<div style="font-size: 14.5px; color: #E2E8F0; line-height: 1.55;">{objective}</div>
 </div>"""
 
     banner_html = f"""<div style="background-color: #1E293B; border: 1px solid #334155; border-left: 4px solid #ED1B2F; border-radius: 10px; padding: 14px 18px; margin-bottom: 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
-<div style="font-size: 16px; font-weight: 700; color: #FFFFFF; margin-bottom: 8px;">{title}</div>
+<div style="font-size: 17.5px; font-weight: 700; color: #FFFFFF; margin-bottom: 8px;">{title}</div>
 {content_html}
 </div>"""
     st.markdown(banner_html, unsafe_allow_html=True)
@@ -476,7 +491,7 @@ def render_dataset_snapshot_table(df_subset: pd.DataFrame, column_dict: dict):
         th_cell = f"""<th>
 <span>{col}</span>
 <div class="th-tooltip">
-<strong style="color: #38BDF8; font-size: 11.5px;">{col}</strong><br>
+<strong style="color: #38BDF8; font-size: 12.5px;">{col}</strong><br>
 {desc}
 </div>
 </th>"""
