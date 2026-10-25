@@ -1,10 +1,10 @@
 """
-McDill University Advancement - Executive Analytics & CASE Intelligence Portal
+McGill University Advancement - Executive Analytics & CASE Intelligence Portal
 File: app.py
-Description: High-contrast Executive Midnight Theme inspired by modern dark-mode dashboards
-             (Power BI Dark, Linear, Datadog), featuring crystal-clear legibility,
-             prestigious university branding, detailed multi-line metric tooltips,
-             module strategic overviews, and vibrant high-contrast data visualizations.
+Description: High-contrast Executive Midnight Theme with centered branding,
+             interactive plot tooltips, comprehensive KPI multi-line tooltips,
+             module strategic overviews, and an interactive CRM dataset snapshot
+             with hoverable column dictionary tooltips.
 """
 
 import streamlit as st
@@ -18,7 +18,7 @@ import os
 # 1. PAGE CONFIGURATION & EXECUTIVE HIGH-CONTRAST DARK THEME
 # =============================================================================
 st.set_page_config(
-    page_title="McDill Advancement Dashboard | FY26",
+    page_title="McGill Advancement Intelligence | FY26",
     page_icon="🎓",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -28,6 +28,10 @@ st.set_page_config(
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    
+    html {
+        scroll-behavior: smooth;
+    }
     
     html, body, [class*="css"] {
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -50,7 +54,7 @@ st.markdown("""
         border: 1px solid #334155 !important;
         border-radius: 12px !important;
         box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25) !important;
-        padding: 6px !important;
+        padding: 8px !important;
     }
     
     [data-testid="stVerticalBlockBorderWrapper"]:hover {
@@ -58,9 +62,22 @@ st.markdown("""
         transition: border-color 0.2s ease;
     }
     
+    /* Subheader Styling with Native Tooltip Hover Target */
+    [data-testid="stSubheader"] {
+        margin-bottom: 4px !important;
+    }
+    
+    [data-testid="stSubheader"] h3 {
+        font-size: 15px !important;
+        font-weight: 700 !important;
+        color: #F8FAFC !important;
+        line-height: 1.3 !important;
+        margin: 0 !important;
+    }
+    
     /* Ultra-Crisp Metric Typography */
     [data-testid="stMetric"] {
-        padding: 10px 12px !important;
+        padding: 8px 10px !important;
     }
     
     [data-testid="stMetricLabel"] {
@@ -117,6 +134,83 @@ st.markdown("""
         font-size: 13px !important;
     }
     
+    /* Dataset Snapshot Table Styling with Tooltips */
+    .table-container {
+        overflow-x: auto;
+        width: 100%;
+        border: 1px solid #334155;
+        border-radius: 8px;
+        background: #0F172A;
+        margin-top: 8px;
+        margin-bottom: 12px;
+    }
+    
+    .snapshot-table {
+        width: max-content;
+        border-collapse: collapse;
+        font-size: 11.5px;
+        text-align: left;
+    }
+    
+    .snapshot-table th {
+        position: relative;
+        padding: 10px 14px;
+        background-color: #1E293B;
+        color: #93C5FD;
+        font-weight: 600;
+        border-bottom: 2px solid #334155;
+        border-right: 1px solid #334155;
+        white-space: nowrap;
+        cursor: help;
+    }
+    
+    .snapshot-table th:hover {
+        background-color: #273549;
+        color: #FFFFFF;
+    }
+    
+    .snapshot-table th .th-tooltip {
+        visibility: hidden;
+        opacity: 0;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        min-width: 200px;
+        max-width: 280px;
+        background-color: #020617;
+        color: #F8FAFC;
+        border: 1px solid #38BDF8;
+        border-radius: 6px;
+        padding: 8px 12px;
+        font-size: 11px;
+        font-weight: normal;
+        line-height: 1.4;
+        white-space: normal;
+        z-index: 99999;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
+        transition: opacity 0.15s ease, visibility 0.15s ease;
+        pointer-events: none;
+    }
+    
+    .snapshot-table th:hover .th-tooltip {
+        visibility: visible;
+        opacity: 1;
+    }
+    
+    .snapshot-table td {
+        padding: 7px 14px;
+        border-bottom: 1px solid #1E293B;
+        border-right: 1px solid #1E293B;
+        color: #CBD5E1;
+        white-space: nowrap;
+        font-family: monospace;
+    }
+    
+    .snapshot-table tr:hover td {
+        background-color: rgba(56, 189, 248, 0.06);
+        color: #FFFFFF;
+    }
+    
     /* Hide Default Header/Footer */
     footer {visibility: hidden;}
     #MainMenu {visibility: hidden;}
@@ -125,8 +219,52 @@ st.markdown("""
 
 
 # =============================================================================
-# 2. DATA CACHING & FAST AGGREGATION
+# 2. COLUMN DEFINITION DICTIONARY & DATA LOADING
 # =============================================================================
+COLUMN_DICTIONARY = {
+    'Constituent_ID': 'Unique 8-digit identifier assigned to each alumni or donor record.',
+    'Class_Year': 'Undergraduate or primary completion year (graduating cohort).',
+    'Birth_Year': 'Calendar year of constituent birth.',
+    'Gender': 'Reported gender identity of the constituent.',
+    'Primary_Degree_Type': 'Academic degree attained (e.g., Bachelor, Master, PhD, MD).',
+    'Primary_Faculty': 'Primary academic division or faculty affiliation.',
+    'Country_of_Residence': 'Country of constituent primary mailing address.',
+    'Province_State': 'Province or state code of constituent primary residence.',
+    'Preferred_Language': 'Preferred communication language (English, French, or Other).',
+    'Wealth_Screening_Rating': 'Third-party estimated net worth and philanthropic capacity tier.',
+    'Has_Valid_Email': 'Flag indicating deliverable email address on file (1/0).',
+    'Email_Opt_Out_Flag': 'Flag indicating constituent unsubscribed from appeals (1/0).',
+    'Emails_Delivered_FY26': 'Count of advancement marketing emails successfully delivered in FY26.',
+    'Emails_Opened_FY26': 'Number of delivered advancement emails opened in FY26.',
+    'Emails_Clicked_FY26': 'Number of links clicked inside advancement emails in FY26.',
+    'GA4_Giving_Page_Views_FY26': 'Google Analytics 4 pageviews recorded on online giving portal in FY26.',
+    'McGill_Connect_Registered': 'Registration flag for official alumni networking platform (1/0).',
+    'McGill_Connect_Logins_FY26': 'Total user logins to alumni networking portal in FY26.',
+    'Lifetime_Events_Attended': 'Cumulative count of university events attended over constituent lifetime.',
+    'Events_Registered_FY26': 'Total university events registered for in FY26.',
+    'Events_Attended_FY26': 'Total university events attended (in-person or virtual) in FY26.',
+    'Attended_Homecoming_FY26': 'Attendance flag for annual Homecoming / Reunion weekend in FY26 (1/0).',
+    'Is_Active_Volunteer_FY26': 'Active alumni volunteer, mentor, or advisory board member in FY26 (1/0).',
+    'Volunteer_Hours_Logged_FY26': 'Total logged volunteer service hours in FY26.',
+    'Alumni_Survey_Completed_FY26': 'Completion flag for the biennial alumni sentiment survey in FY26 (1/0).',
+    'Primary_Solicitation_Channel_FY26': 'Primary marketing solicitation channel assigned for FY26 appeals.',
+    'Direct_Mail_Pieces_Sent_FY26': 'Count of physical appeal letters mailed to constituent in FY26.',
+    'Phonathon_Calls_Completed_FY26': 'Number of student phonathon call connections completed in FY26.',
+    'Marketing_Outreach_Cost_FY26': 'Estimated direct marketing expenditure ($ CAD) spent on constituent in FY26.',
+    'Lifetime_Gift_Count_Prior_To_FY24': 'Total count of donations made prior to fiscal year 2024.',
+    'Lifetime_Giving_Amount_Prior_To_FY24': 'Total dollars ($ CAD) donated prior to fiscal year 2024.',
+    'Gift_Count_FY24': 'Number of distinct donations recorded in FY2024.',
+    'Giving_Amount_FY24': 'Total dollars ($ CAD) donated in FY2024.',
+    'Gift_Count_FY25': 'Number of distinct donations recorded in FY2025.',
+    'Giving_Amount_FY25': 'Total dollars ($ CAD) donated in FY2025.',
+    'Gift_Count_FY26': 'Number of distinct donations recorded in FY2026.',
+    'Giving_Amount_FY26': 'Total dollars ($ CAD) donated in FY2026.',
+    'McGill24_Gift_Amount_FY26': 'Dollars donated specifically during the 24-hour giving day blitz in FY26.',
+    'Is_Monthly_Sustainer_FY26': 'Recurring monthly donor flag (1 if Gift_Count_FY26 >= 6, else 0).',
+    'Last_Gift_Date': 'Timestamp and calendar date of most recent gift transaction.',
+    'Last_Gift_Designation': 'Specific fund, scholarship, or academic chair designated for most recent gift.'
+}
+
 @st.cache_data(show_spinner=False)
 def load_and_preprocess_advancement_data():
     csv_path = "mcgill_advancement_raw_crm.csv"
@@ -172,14 +310,6 @@ def load_and_preprocess_advancement_data():
     df['CASE_Communication'] = ((df['Emails_Opened_FY26'] > 0) | (df['McGill_Connect_Logins_FY26'] > 0)).astype(int)
     df['CASE_Pillar_Count'] = (df['CASE_Philanthropic'] + df['CASE_Experiential'] + df['CASE_Volunteer'] + df['CASE_Communication'])
     
-    # Aliases
-    df['Last_Gift_Designation'] = df['Last_Gift_Designation'].replace({
-        'The McGill Fund (Unrestricted)': 'The McDill Fund (Unrestricted)'
-    })
-    df['Display_Channel'] = df['Primary_Solicitation_Channel_FY26'].replace({
-        'Crowdfunding_McGill24': 'Crowdfunding_McDill24'
-    })
-    
     return df
 
 
@@ -187,7 +317,7 @@ df_master = load_and_preprocess_advancement_data()
 
 
 # =============================================================================
-# 3. HELPER FUNCTIONS: THEMES, TOOLTIPS, & MODULE INTRO BANNERS
+# 3. HELPER FUNCTIONS: THEMES, TOOLTIPS, MODULE BANNERS, & DATASET SNAPSHOT
 # =============================================================================
 def apply_dark_theme(fig, height=270):
     """
@@ -253,6 +383,59 @@ def render_view_banner(title: str, objective: str, visualizations: list[str]):
     st.markdown(banner_html, unsafe_allow_html=True)
 
 
+def render_dataset_snapshot_table(df_subset: pd.DataFrame, column_dict: dict):
+    """
+    Renders an HTML preview table of the first 5 records across all 41 columns.
+    Every column header contains a hover tooltip detailing what the column represents.
+    """
+    headers_html = []
+    for col in df_subset.columns:
+        desc = column_dict.get(col, "CRM data attribute.")
+        th_cell = f"""<th title="{desc}">
+<div style="display: flex; align-items: center; gap: 5px;">
+<span>{col}</span>
+<span style="font-size: 10px; color: #38BDF8;">ℹ️</span>
+</div>
+<div class="th-tooltip">
+<strong style="color: #38BDF8; font-size: 11.5px;">{col}</strong><br>
+{desc}
+</div>
+</th>"""
+        headers_html.append(th_cell)
+    
+    header_row = "".join(headers_html)
+    
+    rows_html = []
+    for _, row in df_subset.iterrows():
+        td_cells = []
+        for col in df_subset.columns:
+            val = row[col]
+            if pd.isna(val):
+                display_val = '<span style="color: #64748B;">None</span>'
+            elif isinstance(val, (float, np.floating)):
+                display_val = f"{val:,.2f}" if val >= 1 else f"{val:.4f}"
+            elif isinstance(val, (int, np.integer)):
+                display_val = f"{val:,}"
+            else:
+                display_val = str(val)
+            td_cells.append(f"<td>{display_val}</td>")
+        rows_html.append(f"<tr>{''.join(td_cells)}</tr>")
+    
+    body_rows = "".join(rows_html)
+    
+    table_html = f"""<div class="table-container">
+<table class="snapshot-table">
+<thead>
+<tr>{header_row}</tr>
+</thead>
+<tbody>
+{body_rows}
+</tbody>
+</table>
+</div>"""
+    return table_html
+
+
 # =============================================================================
 # 4. SIDEBAR FILTERS
 # =============================================================================
@@ -301,11 +484,11 @@ roi_mult = (tot_rev_fy26 / tot_cost) if tot_cost > 0 else 0.0
 
 
 # =============================================================================
-# 5. PRESTIGIOUS BRANDING HEADER & MODULE SELECTOR
+# 5. CENTERED HEADLINE BRANDING & MODULE SELECTOR
 # =============================================================================
-header_branding_html = f"""<div style="display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 18px 24px; background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%); border: 1px solid #334155; border-radius: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.3); margin-bottom: 18px;">
-<div style="display: flex; align-items: center; gap: 20px;">
-<div style="display: flex; align-items: center; justify-content: center; width: 64px; height: 64px; background: #0F172A; border: 1.5px solid #475569; border-radius: 14px; box-shadow: inset 0 2px 6px rgba(0,0,0,0.4); flex-shrink: 0;">
+centered_branding_html = """<div style="text-align: center; max-width: 920px; margin: 0 auto 20px auto; padding: 22px 24px 18px 24px; background: linear-gradient(135deg, rgba(30, 41, 59, 0.75) 0%, rgba(15, 23, 42, 0.85) 100%); border: 1px solid #334155; border-radius: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.35);">
+<div style="display: flex; justify-content: center; margin-bottom: 12px;">
+<div style="display: flex; align-items: center; justify-content: center; width: 66px; height: 66px; background: #0F172A; border: 2px solid #475569; border-radius: 16px; box-shadow: 0 4px 14px rgba(0,0,0,0.4);">
 <svg width="44" height="44" viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <linearGradient id="crestGrad" x1="0" y1="0" x2="54" y2="54" gradientUnits="userSpaceOnUse">
@@ -324,30 +507,21 @@ header_branding_html = f"""<div style="display: flex; align-items: center; justi
 <polygon points="27,11 28.5,15 32.5,15 29.5,17.5 30.5,21.5 27,19 23.5,21.5 24.5,17.5 21.5,15 25.5,15" fill="url(#goldGrad)"/>
 </svg>
 </div>
-<div>
-<div style="font-size: 11px; font-weight: 700; color: #F87171; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 2px;">
-MCDILL UNIVERSITY • DIVISION OF UNIVERSITY ADVANCEMENT
 </div>
-<div style="font-size: 28px; font-weight: 800; color: #FFFFFF; letter-spacing: -0.025em; line-height: 1.2;">
-Advancement Intelligence & Executive Analytics
+<div style="font-size: 32px; font-weight: 800; color: #FFFFFF; letter-spacing: -0.025em; line-height: 1.2; margin-bottom: 8px;">
+McGill University Advancement Intelligence
 </div>
-<div style="font-size: 13.5px; color: #94A3B8; margin-top: 4px; line-height: 1.4;">
-Enterprise decision-support portal tracking FY2026 philanthropic revenue velocity, alumni donor lifecycle migration, campaign ROI, and CASE 4-pillar engagement.
+<div style="font-size: 14.5px; color: #94A3B8; line-height: 1.5; max-width: 820px; margin: 0 auto;">
+An enterprise institutional advancement intelligence platform providing strategic decision-support for university leadership, tracking multi-year philanthropic revenue velocity, alumni donor lifecycle migration, marketing campaign ROI, and CASE 4-pillar engagement.
 </div>
-</div>
-</div>
-<div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex-shrink: 0;">
-<span style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; font-size: 11.5px; font-weight: 700; color: #34D399; background: rgba(52, 211, 153, 0.12); border: 1px solid rgba(52, 211, 153, 0.35); border-radius: 20px;">
-<span style="width: 7px; height: 7px; border-radius: 50%; background: #34D399; box-shadow: 0 0 6px #34D399;"></span>
-FY2026 Reporting Cycle
-</span>
-<span style="display: inline-block; padding: 4px 10px; font-size: 11px; font-weight: 600; color: #60A5FA; background: rgba(96, 165, 250, 0.1); border: 1px solid rgba(96, 165, 250, 0.25); border-radius: 20px;">
-CASE AEM Framework
-</span>
+<div style="margin-top: 12px; font-size: 13.5px;">
+👉 <a href="#dataset-snapshot" style="color: #38BDF8; font-weight: 600; text-decoration: underline; text-underline-offset: 4px; transition: color 0.2s ease;">
+Want to inspect the underlying CRM dataset and column dictionary? Click here to view the data snapshot & schema ↓
+</a>
 </div>
 </div>"""
 
-st.markdown(header_branding_html, unsafe_allow_html=True)
+st.markdown(centered_branding_html, unsafe_allow_html=True)
 
 # Prominent Module Selector (Big Dropdown)
 selected_module = st.selectbox(
@@ -374,12 +548,12 @@ if selected_module == "📊 Executive Overview (Landing Dashboard)":
     
     render_view_banner(
         title="📊 Executive Overview Dashboard",
-        objective="Provides a unified single-pane executive summary of McDill University's overall philanthropic health, pacing toward annual strategic targets, and holistic alumni engagement.",
+        objective="Provides a unified single-pane executive summary of McGill University's overall philanthropic health, pacing toward annual strategic targets, and holistic alumni engagement.",
         visualizations=[
             "6 Top-line institutional KPIs with YoY deltas and detailed benchmarks",
             "Multi-year revenue velocity (FY24–FY26) and Top 5 faculty commitments",
             "Gift designation allocation share and CASE 4-pillar engagement distribution",
-            "McDill24 Giving Day blitz yield, monthly recurring sustainers, and annual goal pacing"
+            "McGill24 Giving Day blitz yield, monthly recurring sustainers, and annual goal pacing"
         ]
     )
     
@@ -466,7 +640,10 @@ if selected_module == "📊 Executive Overview (Landing Dashboard)":
     
     with col_left:
         with st.container(border=True):
-            st.markdown("##### Development Activity (FY24 – FY26)")
+            st.subheader(
+                "Development Activity (FY24 – FY26)",
+                help="Tracks multi-year philanthropic revenue velocity across fiscal years FY2024 through FY2026 ($ CAD). Displays annual giving momentum as a shaded velocity area to highlight year-over-year fundraising growth and campaign pacing."
+            )
             st.caption("Multi-year philanthropic revenue velocity ($ CAD)")
             
             my_df = pd.DataFrame({
@@ -490,7 +667,10 @@ if selected_module == "📊 Executive Overview (Landing Dashboard)":
             apply_dark_theme(fig_area, height=210)
             st.plotly_chart(fig_area, use_container_width=True)
             
-            st.markdown("##### Faculty Commitments Summary")
+            st.subheader(
+                "Faculty Commitments Summary",
+                help="Summarizes philanthropic performance across the top 5 academic faculties in FY26. Displays total active donor headcount, total revenue commitments ($ CAD), and each faculty's proportional share of all gifts."
+            )
             fac_summary = filtered_df.groupby('Primary_Faculty').agg(
                 Donors=('Gift_Count_FY26', lambda x: (x > 0).sum()),
                 Commitments=('Giving_Amount_FY26', 'sum')
@@ -508,7 +688,10 @@ if selected_module == "📊 Executive Overview (Landing Dashboard)":
 
     with col_right:
         with st.container(border=True):
-            st.markdown("##### Gift Designation Share")
+            st.subheader(
+                "Gift Designation Share",
+                help="Visualizes the allocation of FY26 philanthropic gifts across university priority funds, student aid, and academic departments. Displays the percentage share of total dollars directed to unrestricted versus designated causes."
+            )
             desig_df = filtered_df[filtered_df['Giving_Amount_FY26'] > 0].groupby('Last_Gift_Designation')['Giving_Amount_FY26'].sum().reset_index()
             fig_d1 = px.pie(
                 desig_df,
@@ -535,7 +718,10 @@ if selected_module == "📊 Executive Overview (Landing Dashboard)":
             st.plotly_chart(fig_d1, use_container_width=True)
             
         with st.container(border=True):
-            st.markdown("##### CASE 4-Pillar Engagement")
+            st.subheader(
+                "CASE 4-Pillar Engagement",
+                help="Measures constituent relationship depth across the CASE Alumni Engagement Metrics framework (Philanthropic, Experiential, Volunteer, Communication). Displays the percentage of alumni engaged across 0, 1, 2, 3, or all 4 engagement modes."
+            )
             aem_counts = filtered_df['CASE_Pillar_Count'].value_counts().sort_index().reset_index()
             aem_counts.columns = ['Pillars', 'Count']
             aem_labels = {0: '0 Modes', 1: '1 Mode', 2: '2 Modes', 3: '3 Modes', 4: '4 Modes'}
@@ -573,7 +759,7 @@ if selected_module == "📊 Executive Overview (Landing Dashboard)":
             st.plotly_chart(fig_d2, use_container_width=True)
 
     # Bottom Row: 3 Secondary Metric Cards
-    mcdill24_rev = filtered_df['McGill24_Gift_Amount_FY26'].sum()
+    mcgill24_rev = filtered_df['McGill24_Gift_Amount_FY26'].sum()
     sustainers_cnt = (filtered_df['Is_Monthly_Sustainer_FY26'] == 1).sum()
     target_goal = 4000000.0
     pct_goal = (tot_rev_fy26 / target_goal * 100)
@@ -582,9 +768,9 @@ if selected_module == "📊 Executive Overview (Landing Dashboard)":
     with b1:
         with st.container(border=True):
             st.metric(
-                label="McDill24 Giving Day",
-                value=f"${mcdill24_rev/1e3:,.0f}K",
-                delta=f"{(mcdill24_rev/tot_rev_fy26*100):.1f}% Share of Total",
+                label="McGill24 Giving Day",
+                value=f"${mcgill24_rev/1e3:,.0f}K",
+                delta=f"{(mcgill24_rev/tot_rev_fy26*100):.1f}% Share of Total",
                 help=format_tooltip(
                     description="Philanthropic revenue secured during the university's annual 24-hour digital giving campaign.",
                     calculation="Sum of McGill24_Gift_Amount_FY26 across all participating alumni.",
@@ -626,14 +812,14 @@ elif selected_module == "🏛️ Philanthropic Health & Revenue":
         title="🏛️ Philanthropic Health & Commitments",
         objective="Performs an in-depth financial evaluation of university fundraising yield, multi-year revenue growth velocity, and giving tier concentration to evaluate long-term financial stability.",
         visualizations=[
-            "Core revenue metrics: Total commitments, average gift yield, and McDill24 Giving Day yield",
+            "Core revenue metrics: Total commitments, average gift yield, and McGill24 Giving Day yield",
             "Multi-year trajectory bar chart comparing FY24, FY25, and FY26 fundraising totals",
             "Giving tier Pareto dispersion (<$100 to $10k+) showing gift volume and revenue distribution"
         ]
     )
     
     p1, p2, p3 = st.columns(3)
-    mcdill24_rev = filtered_df['McGill24_Gift_Amount_FY26'].sum()
+    mcgill24_rev = filtered_df['McGill24_Gift_Amount_FY26'].sum()
     with p1:
         with st.container(border=True):
             st.metric(
@@ -661,9 +847,9 @@ elif selected_module == "🏛️ Philanthropic Health & Revenue":
     with p3:
         with st.container(border=True):
             st.metric(
-                label="McDill24 Campaign",
-                value=f"${mcdill24_rev:,.0f}",
-                delta=f"{(mcdill24_rev/tot_rev_fy26*100):.1f}% Share",
+                label="McGill24 Campaign",
+                value=f"${mcgill24_rev:,.0f}",
+                delta=f"{(mcgill24_rev/tot_rev_fy26*100):.1f}% Share",
                 help=format_tooltip(
                     description="Philanthropic commitments mobilized during the 24-hour university-wide blitz.",
                     calculation="Sum of McGill24_Gift_Amount_FY26 across all giving day transactions.",
@@ -674,7 +860,10 @@ elif selected_module == "🏛️ Philanthropic Health & Revenue":
     c1, c2 = st.columns(2)
     with c1:
         with st.container(border=True):
-            st.markdown("##### Multi-Year Trajectory (FY24–FY26)")
+            st.subheader(
+                "Multi-Year Trajectory (FY24–FY26)",
+                help="Compares total gross philanthropic commitments raised across the last three fiscal years (FY24, FY25, and FY26). Displays year-over-year revenue bars with exact dollar totals to evaluate longitudinal fundraising trends."
+            )
             fig_traj = go.Figure()
             fig_traj.add_trace(go.Bar(
                 x=['FY24', 'FY25', 'FY26'],
@@ -690,7 +879,10 @@ elif selected_module == "🏛️ Philanthropic Health & Revenue":
             
     with c2:
         with st.container(border=True):
-            st.markdown("##### Giving Tier Dispersion (Pareto)")
+            st.subheader(
+                "Giving Tier Dispersion (Pareto)",
+                help="Breaks down FY26 philanthropic revenue across five distinct giving tiers ranging from under $100 to $10,000+. Displays gift size concentration to illustrate how major and leadership gifts drive total fundraising volume."
+            )
             tier_agg = filtered_df[filtered_df['Giving_Amount_FY26'] > 0].copy()
             tier_agg['Tier'] = pd.cut(
                 tier_agg['Giving_Amount_FY26'],
@@ -781,7 +973,10 @@ elif selected_module == "🔄 Donor Lifecycle & Retention Funnel":
             )
 
     with st.container(border=True):
-        st.markdown("##### Donor Migration Flow (FY25 ➔ FY26)")
+        st.subheader(
+            "Donor Migration Flow (FY25 ➔ FY26)",
+            help="Maps the movement of constituents from their FY25 giving status into FY26 outcomes using a multi-node Sankey diagram. Visualizes consecutive renewal, lapsed non-donors (LYBUNT), reactivated prior givers, and newly acquired first-time donors."
+        )
         lybunt = ((filtered_df['Donated_FY25'] == 1) & (filtered_df['Donated_FY26'] == 0)).sum()
         fig_sankey = go.Figure(go.Sankey(
             node=dict(
@@ -881,7 +1076,10 @@ elif selected_module == "📈 Marketing Efficiency & Channels":
     c_m1, c_m2 = st.columns(2)
     with c_m1:
         with st.container(border=True):
-            st.markdown("##### Channel Conversion Rate (%)")
+            st.subheader(
+                "Channel Conversion Rate (%)",
+                help="Evaluates the donor conversion efficiency of primary solicitation channels including Digital, Direct Mail, Phone, and Crowdfunding. Displays the percentage of contacted constituents in each channel who completed a financial gift in FY26."
+            )
             chan_df = filtered_df.groupby('Display_Channel').agg(
                 Donors=('Gift_Count_FY26', lambda x: (x > 0).sum()),
                 Total=('Constituent_ID', 'count')
@@ -895,7 +1093,10 @@ elif selected_module == "📈 Marketing Efficiency & Channels":
             
     with c_m2:
         with st.container(border=True):
-            st.markdown("##### Digital Giving Funnel")
+            st.subheader(
+                "Digital Giving Funnel",
+                help="Illustrates constituent drop-off across the 5-stage digital solicitation funnel from email delivery to gift completion. Displays the conversion progression through delivered emails, open rates, link clicks, website visits, and completed gifts."
+            )
             fig_fun = go.Figure(go.Funnel(
                 y=["Delivered Email", "Opened Email", "Clicked Link", "Visited Web", "Completed Gift"],
                 x=[
@@ -991,7 +1192,10 @@ elif selected_module == "🤝 CASE 4-Pillar Engagement (AEM)":
     c_e1, c_e2 = st.columns(2)
     with c_e1:
         with st.container(border=True):
-            st.markdown("##### CASE Engagement Modes vs. Giving Rate (%)")
+            st.subheader(
+                "CASE Engagement Modes vs. Giving Rate (%)",
+                help="Demonstrates the empirical lift law between non-financial alumni engagement depth and financial giving propensity. Displays how alumni participating in multiple CASE pillars exhibit up to 9x higher donor participation rates."
+            )
             aem_df = filtered_df.groupby('CASE_Pillar_Count').agg(
                 Donors=('Gift_Count_FY26', lambda x: (x > 0).sum()),
                 Total=('Constituent_ID', 'count')
@@ -1005,7 +1209,10 @@ elif selected_module == "🤝 CASE 4-Pillar Engagement (AEM)":
             
     with c_e2:
         with st.container(border=True):
-            st.markdown("##### Homecoming Milestone Spikes")
+            st.subheader(
+                "Homecoming Milestone Spikes",
+                help="Tracks Homecoming and reunion weekend attendance rates as a function of years since graduation. Displays cyclical participation peaks corresponding to 5, 10, 20, and 25-year milestone reunion cohorts."
+            )
             years = filtered_df.groupby('Years_Since_Grad')['Attended_Homecoming_FY26'].mean().reset_index()
             years['Rate'] = years['Attended_Homecoming_FY26'] * 100
             fig_home = px.line(years, x='Years_Since_Grad', y='Rate', markers=True)
@@ -1077,7 +1284,10 @@ elif selected_module == "💎 Prospect Capacity & Faculty Intelligence":
     c_f1, c_f2 = st.columns([1.1, 0.9])
     with c_f1:
         with st.container(border=True):
-            st.markdown("##### Faculty Commitments ($ CAD)")
+            st.subheader(
+                "Faculty Commitments ($ CAD)",
+                help="Displays total philanthropic commitments secured in FY26 broken down by academic division and faculty. Highlights top performing faculties and comparative funding distribution across the university."
+            )
             fac_league = filtered_df.groupby('Primary_Faculty')['Giving_Amount_FY26'].sum().reset_index().sort_values(by='Giving_Amount_FY26', ascending=True)
             fig_fl = px.bar(fac_league, x='Giving_Amount_FY26', y='Primary_Faculty', orientation='h', color_discrete_sequence=['#38BDF8'])
             fig_fl.update_yaxes(title_text='')
@@ -1087,7 +1297,10 @@ elif selected_module == "💎 Prospect Capacity & Faculty Intelligence":
             
     with c_f2:
         with st.container(border=True):
-            st.markdown("##### Wealth Screening Matrix")
+            st.subheader(
+                "Wealth Screening Matrix",
+                help="Cross-tabulates estimated wealth capacity tiers with actual donor conversion rates and philanthropic revenue. Displays addressable prospect pool sizes, giving participation rates, and total dollars raised per capacity bracket."
+            )
             w_matrix = filtered_df.groupby('Wealth_Screening_Rating').agg(
                 Alumni=('Constituent_ID', 'count'),
                 Donors=('Gift_Count_FY26', lambda x: (x > 0).sum()),
@@ -1099,7 +1312,37 @@ elif selected_module == "💎 Prospect Capacity & Faculty Intelligence":
 
 
 # =============================================================================
-# 6. MINIMAL FOOTER
+# 6. CRM DATASET SNAPSHOT & INTERACTIVE COLUMN DICTIONARY (BOTTOM OF PAGE)
+# =============================================================================
+st.markdown("<div id='dataset-snapshot' style='padding-top: 24px;'></div>", unsafe_allow_html=True)
+st.markdown("---")
+
+with st.container(border=True):
+    st.subheader(
+        "📋 CRM Dataset Snapshot & Interactive Column Dictionary",
+        help="Displays an exploratory snapshot of the underlying institutional advancement CRM dataset across all 41 constituent attributes. Hover over any column header to view its business definition and usage."
+    )
+    st.caption("Showing the first 5 records across all 41 columns. **Hover over any column header** to inspect its data definition in a few words.")
+    
+    # 5 Sample rows from raw CRM
+    snapshot_subset = df_master[[c for c in COLUMN_DICTIONARY.keys() if c in df_master.columns]].head(5)
+    snapshot_table_html = render_dataset_snapshot_table(snapshot_subset, COLUMN_DICTIONARY)
+    st.markdown(snapshot_table_html, unsafe_allow_html=True)
+    
+    with st.expander("📖 View Complete Column Dictionary (All 41 CRM Attributes)"):
+        dict_data = [
+            {
+                "Column Name": col,
+                "Data Type": str(df_master[col].dtype) if col in df_master.columns else "N/A",
+                "Business Definition & Scope": desc
+            }
+            for col, desc in COLUMN_DICTIONARY.items()
+        ]
+        st.dataframe(pd.DataFrame(dict_data), hide_index=True, use_container_width=True)
+
+
+# =============================================================================
+# 7. MINIMAL FOOTER
 # =============================================================================
 st.markdown("---")
-st.caption("McDill University Advancement Analytics • High-Contrast Executive Dashboard • FY2026 Reporting Year")
+st.caption("McGill University Advancement Analytics • High-Contrast Executive Dashboard • FY2026 Reporting Year")
