@@ -1,16 +1,28 @@
 """
-McGill University Advancement - Raw CRM Data Generator
+McDill University Advancement - Enterprise Raw CRM Data Simulation Engine
 Script: generate_raw_crm_data.py
-Target Output: mcgill_advancement_raw_crm.csv (30,000 constituent records)
+Target Output: mcgill_advancement_raw_crm.csv (30,000 constituent records, 41 columns)
 
-Description:
-Simulates a merged raw database extract from Salesforce CRM, Salesforce Marketing Cloud,
-Eventbrite/AlumnForce, and Google Analytics 4 (GA4) at the close of Fiscal Year 2026
-(McGill Fiscal Year: May 1, 2025 – April 30, 2026; McGill24: March 11, 2026).
+Pipeline Architecture & Role:
+-----------------------------
+This script serves as the foundational data synthesis layer for the McDill University
+Advancement Intelligence platform. In enterprise university advancement, raw constituent
+records originate from disparate source systems:
+1. Core CRM Database (Salesforce / Ellucian Advance): Demographics, degree, faculty, geography
+2. Digital Marketing Platform (Salesforce Marketing Cloud): Email delivery, opens, clicks
+3. Web Analytics (Google Analytics 4): Online giving portal traffic and pageviews
+4. Event & Community Platforms (Eventbrite / AlumnForce): Event registrations, attendance, logins
+5. Financial Gift Records (Transaction Ledger): Multi-year gifts, funds, giving day pledges
 
-Zero summary KPIs or calculated percentage scores are output.
-All columns represent realistic raw database fields with natural latent statistical
-correlations for downstream feature engineering and predictive modeling.
+Rather than outputting pre-aggregated KPIs, this script produces pure atomic database rows
+with zero pre-calculated summary percentages. Natural latent human behavior is modeled via
+correlated probabilistic distributions (Pareto giving curves, Beta-Binomial engagement,
+Negative Binomial attendance, and latent propensity scores) ensuring zero impossible rows
+and realistic downstream feature engineering for predictive modeling.
+
+Fiscal Year Reference:
+- Fiscal Year 2026: May 1, 2025 to April 30, 2026
+- Annual Giving Day (McDill24): Wednesday, March 11, 2026
 """
 
 import numpy as np
@@ -19,12 +31,23 @@ from datetime import datetime, timedelta
 import os
 import sys
 
-# Set master reproducible seed
+# Master seed for strict deterministic reproducibility across runs
 np.random.seed(42)
 
 def generate_mcgill_advancement_data(n_records: int = 30000) -> pd.DataFrame:
     """
-    Generates a realistic raw constituent extract of 30,000 alumni records.
+    Synthesizes a realistic raw constituent extract of 30,000 alumni and donor records.
+
+    Parameters:
+    -----------
+    n_records : int, default=30000
+        Number of constituent records to simulate.
+
+    Returns:
+    --------
+    pd.DataFrame
+        Clean DataFrame containing exactly 30,000 rows and 41 raw database columns
+        strictly aligned with enterprise higher-education data schemas.
     """
     print(f"Starting constituent generation for N={n_records:,} records...")
 
@@ -811,7 +834,29 @@ def generate_mcgill_advancement_data(n_records: int = 30000) -> pd.DataFrame:
 
 def validate_data_integrity(df: pd.DataFrame) -> None:
     """
-    Enforces strict logical constraints so that zero impossible rows exist.
+    Enforces strict logical constraints and domain sanity checks on the generated dataset.
+
+    This function asserts that zero impossible rows exist across all 41 columns:
+    - Demographic consistency (birth years match degree lengths, class years 1965-2025)
+    - Faculty constraints (MD/JD mapped exclusively to Medicine or Law)
+    - Geographic consistency (Province/State is null for international constituents)
+    - Marketing email funnel (unsubscribed/invalid emails receive 0 delivered emails;
+      clicks cannot exceed opens, opens cannot exceed delivered)
+    - Event attendance logic (Homecoming requires >=1 event attended; attendance <= registrations)
+    - Volunteer hours (strictly 0 for non-volunteers, between 2.0 and 65.0 for active volunteers)
+    - Marketing expenditure formula verification (matches exact enterprise cost rates)
+    - Transaction rules (gift amounts strictly positive if gift count > 0; $0 if gift count is 0;
+      McGill24 giving <= total FY26 giving; sustainers require >=6 gifts; non-donors have null dates)
+
+    Parameters:
+    -----------
+    df : pd.DataFrame
+        Synthesized constituent dataset.
+
+    Raises:
+    -------
+    AssertionError
+        If any logical boundary or domain relationship is violated.
     """
     print("\n" + "=" * 65)
     print("RUNNING RIGOROUS DATA INTEGRITY & SANITY CHECKS")
@@ -932,7 +977,18 @@ def validate_data_integrity(df: pd.DataFrame) -> None:
 
 def print_schema_summary(df: pd.DataFrame, output_path: str) -> None:
     """
-    Prints a clean schema check and summary statistics as required.
+    Outputs a formatted audit report of the CRM database extract to stdout.
+
+    Prints file size metrics, in-memory footprint, data types, null counts and percentages
+    for all 41 columns, as well as benchmark sanity audits against target higher education
+    performance indicators (email open rates, retention rates, and total dollars raised).
+
+    Parameters:
+    -----------
+    df : pd.DataFrame
+        Validated constituent dataset.
+    output_path : str
+        Filesystem path to the exported CSV artifact.
     """
     print("=" * 65)
     print("MCGILL UNIVERSITY ADVANCEMENT - CRM RAW EXTRACT SCHEMA CHECK")

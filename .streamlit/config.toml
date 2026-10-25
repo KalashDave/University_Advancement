@@ -1,12 +1,25 @@
+# =============================================================================
+# Streamlit Server & Executive Theme Configuration
+# =============================================================================
+
 [theme]
+# Base dark mode styling
 base = "dark"
+# McDill University crimson brand accent
 primaryColor = "#ED1B2F"
+# Executive Midnight background canvas
 backgroundColor = "#0F172A"
+# Card container and sidebar slate background
 secondaryBackgroundColor = "#1E293B"
+# High-contrast crisp white typography
 textColor = "#F8FAFC"
+# Modern typography font family
 font = "sans serif"
 
 [server]
+# Run without prompting for browser window or email collection
 headless = true
+# Disable cross-origin restrictions for containerized deployment
 enableCORS = false
+# Disable XSRF token checks for public analytics dashboards
 enableXsrfProtection = false

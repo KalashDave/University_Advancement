@@ -1,13 +1,22 @@
+# Byte-compiled / optimized Python files
 __pycache__
 *.pyc
 *.pyo
 *.pyd
+
+# Git version control metadata
 .git
 .gitignore
+
+# Virtual environment folders
 .venv
 venv/
 env/
+
+# IDE and editor configurations
 .idea/
 .vscode/
+
+# Local logs and temporary scratch files
 *.log
 scratchpad*

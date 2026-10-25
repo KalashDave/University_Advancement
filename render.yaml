@@ -1,10 +1,17 @@
+# =============================================================================
+# Render Blueprint Specification (Infrastructure as Code)
+# Automatically builds and deploys the Docker container on Render Free Tier.
+# =============================================================================
 services:
+  # Web service running the Streamlit advancement intelligence portal
   - type: web
     name: mcdill-advancement-analytics
+    # Use custom Dockerfile rather than standard Python buildpack
     runtime: docker
     plan: free
     region: oregon
     branch: main
+    # Environment variables injected into the container runtime
     envVars:
       - key: PORT
         value: 8501
