@@ -1,12 +1,15 @@
 # McDill University Advancement Intelligence & CASE Analytics Portal
 
-**Live Application Demo:** [https://mcdill-advancement-analytics.onrender.com](https://mcdill-advancement-analytics.onrender.com)
+**Live Application Demo:** [https://university-advancement.onrender.com/](https://university-advancement.onrender.com/)
+
+> [!NOTE]
+> **Render Free Tier Notice:** Web services on Render Free Tier automatically enter sleep mode after fifteen minutes of inactivity. If the service is currently inactive, please allow approximately 30 to 50 seconds for the Docker container to spin up, then refresh the page if needed.
 
 ---
 
 ## 1. Project Title, Overview & Live Demo
 
-**McDill University Advancement Intelligence** is an enterprise-grade institutional analytics and decision-support portal engineered for university executives, advancement vice-presidents, annual giving directors, and major gift officers. 
+**McDill University Advancement Intelligence** is an enterprise-grade institutional analytics and decision-support portal built for university leadership, advancement vice-presidents, annual giving directors, and major gift officers.
 
 ### The Core Business Problem
 Higher education institutions face increasing pressure to optimize fundraising operations, justify marketing expenditures, and transition from anecdotal outreach to data-driven constituent engagement. In typical advancement divisions, data is siloed across disparate platforms:
@@ -16,7 +19,7 @@ Higher education institutions face increasing pressure to optimize fundraising o
 * Event and community platforms (Eventbrite, AlumnForce) tracking reunion attendance and alumni network logins.
 * Financial ledgers recording multi-year gift transactions, recurring monthly pledges, and annual giving day totals.
 
-Without a unified intelligence layer, leadership cannot accurately measure the Cost to Raise a Dollar (CRD), evaluate alumni retention trajectories across cohorts, or benchmark engagement against recognized standards such as the Council for Advancement and Support of Education (CASE) Alumni Engagement Metrics (AEM).
+Without a unified intelligence layer, leadership cannot accurately measure the Cost to Raise a Dollar (CRD), evaluate alumni retention trajectories across cohorts, or benchmark engagement against recognized industry standards such as the [Council for Advancement and Support of Education (CASE) Insights on Alumni Engagement](https://www.case.org/resources/case-insights-alumni-engagement).
 
 ### How This Platform Solves It
 This portal bridges the gap between raw atomic database extracts and executive decision-making. Ingesting an enterprise dataset of 30,000 constituent records across 41 raw database fields, it executes real-time feature engineering, lifecycle segmentation, and statistical attribution. The application provides an interactive, dark-mode analytics suite that helps institutional advancement teams:
@@ -28,21 +31,77 @@ This portal bridges the gap between raw atomic database extracts and executive d
 
 ---
 
-## 2. Tech Stack & Architecture Summary
+## 2. Project Architecture & Development Flow
 
-The repository is built using an enterprise Python analytics stack optimized for high performance, interactive data visualization, and cloud containerization.
+The following end-to-end architecture diagram outlines how this project was designed, developed, and deployed from initial problem scoping to production cloud hosting:
+
+```mermaid
+flowchart TD
+    subgraph Phase1["1. Problem Definition & Domain Scoping"]
+        A1["Identify Higher Ed Advancement Challenges"] --> A2["Review CASE AEM Benchmarks & Standards"]
+        A2 --> A3["Define 5 Functional Data Domains & Core Metrics"]
+    end
+
+    subgraph Phase2["2. Probabilistic Data Synthesis Engine"]
+        B1["generate_raw_crm_data.py"] --> B2["Simulate 30,000 Atomic Records across 41 Columns"]
+        B2 --> B3["Apply Real-World Distributions (Pareto, Beta-Binomial, Poisson)"]
+        B3 --> B4["Execute Strict Sanity Assertions (Zero Impossible Rows)"]
+        B4 --> B5[("mcgill_advancement_raw_crm.csv (6.1 MB)")]
+    end
+
+    subgraph Phase3["3. Data Ingestion & Dynamic Feature Engineering"]
+        C1["app.py: Load Raw CSV Extract"] --> C2["In-Memory Memoization via @st.cache_data"]
+        C2 --> C3["Derive Graduation Cohorts & Generational Bins"]
+        C3 --> C4["Calculate CASE 4-Pillar Flags & Loyalty Indices"]
+    end
+
+    subgraph Phase4["4. User Experience & Interactive Analytics Portal"]
+        D1["Sidebar Multi-Select Global Slicers"] --> D2["Dynamic In-Memory DataFrame Filtering"]
+        D2 --> D3["Executive Overview: Strategic KPIs & Demographics"]
+        D2 --> D4["Philanthropic Health: Pareto Concentration & Seasonality"]
+        D2 --> D5["Donor Lifecycle: Retention Funnel & Sustainer Velocity"]
+        D2 --> D6["Marketing Efficiency: Channel ROI & Funnel Attribution"]
+        D2 --> D7["CASE AEM: 4-Pillar Breadth & Cross-Modal Lift"]
+        D2 --> D8["Prospect Capacity: Wealth Tiers & Major Gift Pipeline"]
+        D2 --> D9["CRM Snapshot Table with CSS Tooltip Hover Cards"]
+    end
+
+    subgraph Phase5["5. Production Containerization & Cloud Deployment"]
+        E1["Dockerfile: Debian Python 3.11-slim Base Image"] --> E2["Layer Caching Strategy for Dependencies"]
+        E2 --> E3["Dynamic $PORT Runtime Binding & Healthchecks"]
+        E3 --> E4["render.yaml Infrastructure-as-Code Blueprint"]
+        E4 --> E5["Render Free Tier Cloud Container Deployment"]
+    end
+
+    Phase1 --> Phase2
+    Phase2 --> Phase3
+    Phase3 --> Phase4
+    Phase4 --> Phase5
+```
+
+### Development Methodology Stages
+1. **Problem Scoping & Domain Alignment:** Advancement operational requirements were synthesized with Council for Advancement and Support of Education guidelines to target the metrics university vice-presidents and directors track.
+2. **Data Synthesis Engine (`generate_raw_crm_data.py`):** Rather than generating flat random numbers, the generator uses coupled probabilistic distributions (Pareto gift curves, Beta-Binomial marketing funnels, Negative Binomial event attendance). Rigorous sanity assertion suites guarantee zero logical contradictions.
+3. **Data Preprocessing & In-Memory Enrichment (`app.py`):** High-speed ingestion leverages `@st.cache_data` to load the 30,000 constituent rows into RAM once. Derived features (Class Year cohorts, generational tags, CASE 4-pillar binary indicators) are engineered on the fly.
+4. **Executive User Experience & Visualization:** Built using Streamlit and Plotly Express with a custom Executive Midnight dark theme (`#0F172A`). Each analytical module follows a standardized 2x2 grid layout with dedicated tooltips and interactive hover cards.
+5. **Production Dockerization & Cloud Hosting:** Packaged with a lightweight Debian Linux base, layer-cached requirements, curl healthchecks, and dynamic port binding for reliable zero-cost hosting on Render.
+
+---
+
+## 3. Tech Stack & Architecture Summary
+
+The repository is built using an enterprise Python analytics stack optimized for fast execution, interactive data visualization, and cloud containerization.
 
 | Layer | Technologies & Libraries | Role & Implementation Details |
 | :--- | :--- | :--- |
 | **Data Engineering & Synthesis** | Python 3.11, NumPy, Pandas | Deterministic generation of 30,000 constituent records with 41 raw database attributes, Pareto gift distributions, and automated data integrity assertion suites. |
 | **Analytics & UI Engine** | Streamlit (>=1.35.0) | High-contrast Executive Midnight interface, multi-select global slicers, in-memory caching via `@st.cache_data`, and custom responsive CSS component containers. |
 | **Data Visualization** | Plotly Express, Plotly Graph Objects (>=5.18.0) | 2x2 grid suites per module, interactive hover cards, multi-year trend trajectories, Pareto concentration charts, and demographic distributions. |
-| **Predictive Analytics & ML** | Scikit-Learn (>=1.3.0), NumPy | Latent behavioral propensity modeling, feature engineering, wealth screening capacity scoring, and leakage-free prospect prioritization. |
-| **Containerization & Cloud Ops** | Docker, Render PaaS, Linux / Debian Slim | Multi-stage Docker containerization with layer caching, curl healthchecks, dynamic `$PORT` binding, and Render Blueprint infrastructure-as-code automation. |
+| **Containerization & Cloud Ops** | Docker, Render PaaS, Linux / Debian Slim | Production Docker containerization with layer caching, curl healthchecks, dynamic `$PORT` binding, and Render Blueprint infrastructure-as-code automation. |
 
 ---
 
-## 3. Repository File Structure & Component Guide
+## 4. Repository File Structure & Component Guide
 
 ```text
 University_Advancement/
@@ -60,7 +119,7 @@ University_Advancement/
 
 ### Component Breakdown
 * **`app.py`**: The central application script. Contains the executive dark theme CSS, data preprocessing routines, global filtering engine, KPI calculation logic, and six specialized analytical views.
-* **`generate_raw_crm_data.py`**: The data synthesis script. Simulates realistic, non-random alumni constituent profiles using statistical distributions, latent behavioral propensity equations, and integrity assertion checks.
+* **`generate_raw_crm_data.py`**: The data synthesis script. Simulates realistic, non-random alumni constituent profiles using statistical distributions, behavioral relationship equations, and integrity assertion checks.
 * **`mcgill_advancement_raw_crm.csv`**: The 41-column, 30,000-row constituent dataset produced by the simulation script. Contains atomic CRM records without pre-aggregated summaries.
 * **`Dockerfile`**: Defines the Debian-based container image. Uses Python 3.11-slim, implements Docker layer caching for dependencies, installs healthcheck utilities, and dynamically binds to the host port.
 * **`render.yaml`**: Infrastructure-as-code specification for deploying the Docker container directly to Render Free Tier web services.
@@ -69,45 +128,76 @@ University_Advancement/
 
 ---
 
-## 4. Dataset & Data Simulation Methodology
+## 5. Dataset Schema & Complete Column Data Dictionary
 
-The underlying dataset (`mcgill_advancement_raw_crm.csv`) models a comprehensive constituent extract at the close of Fiscal Year 2026 (May 1, 2025 to April 30, 2026). It contains **30,000 constituent records** and **41 raw database columns** spanning five core functional domains:
+The underlying dataset (`mcgill_advancement_raw_crm.csv`) models a comprehensive constituent extract at the close of Fiscal Year 2026 (May 1, 2025 to April 30, 2026). It contains **30,000 constituent records** and **41 raw database columns** organized across five functional advancement domains:
 
-1. **Constituent Demographics & Education (10 columns):** `Constituent_ID`, `Class_Year`, `Birth_Year`, `Gender`, `Primary_Degree_Type`, `Primary_Faculty`, `Country_of_Residence`, `Province_State`, `Preferred_Language`, `Wealth_Screening_Rating`.
-2. **Digital & Marketing Cloud Logs (8 columns):** `Has_Valid_Email`, `Email_Opt_Out_Flag`, `Emails_Delivered_FY26`, `Emails_Opened_FY26`, `Emails_Clicked_FY26`, `GA4_Giving_Page_Views_FY26`, `McGill_Connect_Registered`, `McGill_Connect_Logins_FY26`.
-3. **Experiential Events & Volunteer Logs (7 columns):** `Lifetime_Events_Attended`, `Events_Registered_FY26`, `Events_Attended_FY26`, `Attended_Homecoming_FY26`, `Is_Active_Volunteer_FY26`, `Volunteer_Hours_Logged_FY26`, `Alumni_Survey_Completed_FY26`.
-4. **Solicitation & Campaign Outreach (4 columns):** `Primary_Solicitation_Channel_FY26`, `Direct_Mail_Pieces_Sent_FY26`, `Phonathon_Calls_Completed_FY26`, `Marketing_Outreach_Cost_FY26`.
-5. **Multi-Year Philanthropic History (12 columns):** `Lifetime_Gift_Count_Prior_To_FY24`, `Lifetime_Giving_Amount_Prior_To_FY24`, `Gift_Count_FY24`, `Giving_Amount_FY24`, `Gift_Count_FY25`, `Giving_Amount_FY25`, `Gift_Count_FY26`, `Giving_Amount_FY26`, `McGill24_Gift_Amount_FY26`, `Is_Monthly_Sustainer_FY26`, `Last_Gift_Date`, `Last_Gift_Designation`.
+### Domain 1: Constituent Demographics & Education (10 Columns)
+| Column Name | Data Type | Description |
+| :--- | :--- | :--- |
+| `Constituent_ID` | String | Unique 8-digit identifier assigned to each alumni or donor record (e.g., MCG-1000001). |
+| `Class_Year` | Integer | Undergraduate or primary completion graduation year (cohorts between 1965 and 2025). |
+| `Birth_Year` | Integer | Calendar year of constituent birth, logically aligned with degree duration. |
+| `Gender` | String | Self-reported gender identity of constituent (Female, Male, Non-Binary / Other). |
+| `Primary_Degree_Type` | String | Academic degree attained (Undergraduate 68%, Masters 22%, PhD 5%, MD/JD 5%). |
+| `Primary_Faculty` | String | Primary academic division affiliation (Arts, Science, Management, Engineering, Medicine, etc.). |
+| `Country_of_Residence` | String | Primary mailing address country (Canada 67%, US 18%, UK, France, Hong Kong, Other). |
+| `Province_State` | String | Canadian province or US state code; populated only for North American addresses. |
+| `Preferred_Language` | String | Preferred communication language (English 78%, French 22%). |
+| `Wealth_Screening_Rating` | String | Third-party estimated net worth tier (Tier 1 $100k+, Tier 2 $25k-$99k, down to Unrated). |
 
-### Statistical Distributions & Behavioral Realism
-Rather than populating records with uniform random numbers, the data generator enforces human behavioral correlations and domain rules:
-* **Heavy-Tailed Giving Amounts (Pareto Distribution):** Gift sizes follow a Pareto power-law distribution where shape parameter alpha (1.15 to 1.80) scales inversely with wealth capacity. Major gift tiers capture the vast majority of philanthropic dollars.
-* **Email Engagement Funnel (Beta-Binomial Process):** Email open rates hover around 28%, and click-through rates range from 0% to 40% of opened emails, reflecting real-world marketing engagement.
-* **Web Intent Signals (Poisson Process):** GA4 online giving page views (0 to 18) are directly tied to email click events, with organic search accounting for minor background visits.
-* **Event Attendance & No-Show Factor:** Event attendance applies an 80% realization rate (20% no-show drop-off) against registered seats. Homecoming attendance spikes for alumni celebrating 5-year reunion milestones (5th, 10th, 15th, 20th, 25th reunions).
-* **Strict Logical Boundaries (Zero Impossible Rows):** Unsubscribed constituents never receive digital emails. Non-volunteers log exactly zero volunteer hours. Non-donors have null gift dates. Geographic states are null outside North America.
+### Domain 2: Digital & Marketing Cloud Logs (8 Columns)
+| Column Name | Data Type | Description |
+| :--- | :--- | :--- |
+| `Has_Valid_Email` | Integer (0/1) | Flag indicating a deliverable email address is on file (92% valid). |
+| `Email_Opt_Out_Flag` | Integer (0/1) | Flag indicating constituent unsubscribed from appeals; automatically 1 if email is invalid. |
+| `Emails_Delivered_FY26` | Integer | Count of advancement marketing emails delivered in FY26 (0 if opted out, else 8 to 32). |
+| `Emails_Opened_FY26` | Integer | Delivered emails opened in FY26 (Beta-Binomial draw calibrated to ~28% average open rate). |
+| `Emails_Clicked_FY26` | Integer | Links clicked inside advancement emails in FY26 (0% to 40% of opened emails). |
+| `GA4_Giving_Page_Views_FY26` | Integer | Google Analytics 4 pageviews on the online giving portal (0 to 18, correlated with email clicks). |
+| `McGill_Connect_Registered` | Integer (0/1) | Registration flag for the official McDill Connect alumni networking platform (~18% overall). |
+| `McGill_Connect_Logins_FY26` | Integer | Total user logins to the alumni networking portal in FY26 (Poisson draw, 0 to 25). |
+
+### Domain 3: Experiential Events & Volunteer Logs (7 Columns)
+| Column Name | Data Type | Description |
+| :--- | :--- | :--- |
+| `Lifetime_Events_Attended` | Integer | Cumulative university events attended over lifetime (Negative Binomial, higher for local alumni). |
+| `Events_Registered_FY26` | Integer | Total university events registered for during FY26 (~26% register for at least one). |
+| `Events_Attended_FY26` | Integer | University events attended in FY26, accounting for an approximate 20% no-show drop-off. |
+| `Attended_Homecoming_FY26` | Integer (0/1) | Attendance flag for Homecoming weekend; elevated for 5-year reunion milestone cohorts. |
+| `Is_Active_Volunteer_FY26` | Integer (0/1) | Active alumni volunteer, mentor, or board member in FY26 (~5.5% participation rate). |
+| `Volunteer_Hours_Logged_FY26` | Float | Total logged volunteer hours in FY26 (strictly 0 for non-volunteers, 2.0 to 65.0 for active). |
+| `Alumni_Survey_Completed_FY26`| Integer (0/1) | Completion flag for the biennial alumni sentiment survey (~11% completion rate). |
+
+### Domain 4: Solicitation & Campaign Outreach (4 Columns)
+| Column Name | Data Type | Description |
+| :--- | :--- | :--- |
+| `Primary_Solicitation_Channel_FY26` | String | Assigned channel (Digital, Direct Mail, Phonathon, Crowdfunding McDill24, or No Solicitation). |
+| `Direct_Mail_Pieces_Sent_FY26` | Integer | Physical appeal letters mailed to constituent (0 to 4, higher for older alumni). |
+| `Phonathon_Calls_Completed_FY26` | Integer | Student phonathon call connections completed in FY26 (0 to 3). |
+| `Marketing_Outreach_Cost_FY26` | Float | Exact marketing cost ($0.08/email + $3.75/mail + $6.50/call + $0.50 if GA4 visits > 0). |
+
+### Domain 5: Multi-Year Philanthropic & Gift History (12 Columns)
+| Column Name | Data Type | Description |
+| :--- | :--- | :--- |
+| `Lifetime_Gift_Count_Prior_To_FY24` | Integer | Total count of donations recorded prior to fiscal year 2024 (~38% prior donors). |
+| `Lifetime_Giving_Amount_Prior_To_FY24` | Float | Total dollars ($ CAD) donated prior to fiscal year 2024 (0.0 if prior count is 0). |
+| `Gift_Count_FY24` | Integer | Number of distinct donations recorded in FY2024 (~13% donor rate). |
+| `Giving_Amount_FY24` | Float | Total dollars ($ CAD) donated in FY2024 (Pareto heavy-tailed distribution). |
+| `Gift_Count_FY25` | Integer | Number of distinct donations recorded in FY2025 (~14% donor rate, 62% retention from FY24). |
+| `Giving_Amount_FY25` | Float | Total dollars ($ CAD) donated in FY2025. |
+| `Gift_Count_FY26` | Integer | Number of distinct donations recorded in FY2026 (14% to 16% donor rate). |
+| `Giving_Amount_FY26` | Float | Total dollars ($ CAD) donated in FY2026. |
+| `McGill24_Gift_Amount_FY26` | Float | Dollars donated specifically during the McDill24 24-hour giving day blitz in FY26. |
+| `Is_Monthly_Sustainer_FY26` | Integer (0/1) | Recurring monthly donor flag (strictly 1 if Gift_Count_FY26 >= 6, else 0). |
+| `Last_Gift_Date` | String / Null | Date (YYYY-MM-DD) of most recent donation; strictly null for lifetime non-donors. |
+| `Last_Gift_Designation` | String / Null | Fund designation (The McDill Fund, Scholarships, Priority, Research, Athletics); null for non-donors. |
 
 ---
 
-## 5. Dashboard Architecture & User Experience
+## 6. Dashboard Architecture & User Experience
 
-The web application is structured with intuitive navigation and global filtering controls:
-
-```text
-[ Sidebar Global Slicers: Faculty | Cohort | Region | Wealth Tier ]
-                                ↓
-        [ Header: McDill University Advancement Analytics ]
-                                ↓
-    [ Module Selector: 6 Strategic Advancement Views ]
-                                ↓
-       [ Module Banner: Scope, Objectives & CASE Pillars ]
-                                ↓
-       [ Aligned Strategic KPI Metric Cards with Tooltips ]
-                                ↓
-         [ 2x2 Distinct Plotly Visualization Suites ]
-                                ↓
- [ Interactive 41-Column CRM Dataset Snapshot (Landing Page Only) ]
-```
+The application is structured into a unified executive interface with left-sidebar global slicers and six distinct module views:
 
 ### Global Slicers & Filtering
 All filters reside in the collapsible left sidebar and default to "All" options:
@@ -116,7 +206,7 @@ All filters reside in the collapsible left sidebar and default to "All" options:
 * **Geographic Region:** Multiselect filtering by Quebec, Rest of Canada, United States, and International regions.
 * **Wealth Capacity Tier:** Multiselect isolating Tier 1 ($100k+), Tier 2 ($25k-$99k), Tier 3 ($5k-$24k), Tier 4 ($1k-$4.9k), Tier 5 (Under $1k), and Unrated records.
 
-### Detailed Overview of the 6 Dashboard Modules
+### Summary of the 6 Dashboard Modules
 
 #### View 1: Executive Overview (Landing Dashboard)
 * **Purpose:** Single-pane institutional briefing for the President, Provost, and Vice-President of Advancement.
@@ -153,8 +243,12 @@ All filters reside in the collapsible left sidebar and default to "All" options:
   4. *Net ROI Multiple by Channel:* Ranks solicitation channels by return on marketing investment.
 
 #### View 5: CASE 4-Pillar Engagement (AEM)
-* **Purpose:** Operationalizes the Council for Advancement and Support of Education framework across all four recognized dimensions.
-* **Pillar Definitions:** Philanthropic (financial contributions), Experiential (event and reunion attendance), Volunteer (boards, mentoring, and ambassadorship), Communication (email opens and portal logins).
+* **Purpose:** Operationalizes the Council for Advancement and Support of Education framework across all four recognized dimensions. For detailed reference on the underlying framework, visit the official [CASE Insights on Alumni Engagement](https://www.case.org/resources/case-insights-alumni-engagement) portal.
+* **The 4 CASE Pillars:**
+  1. *Philanthropic:* Monetary gifts, annual pledges, and recurring monthly donations.
+  2. *Experiential:* In-person and virtual event attendance, class reunions, and webinars.
+  3. *Volunteer:* Alumni boards, student mentoring, advisory panels, and committee leadership.
+  4. *Communication:* Opening digital university appeals, reading newsletters, and McDill Connect logins.
 * **KPIs:** Event Attendance Rate (Experiential), Ticket Show Rate (Realized Attendance), 2+ CASE Modes Multi-Modal Share, Active Volunteers Count.
 * **Visualizations (2x2 Grid):**
   1. *CASE 4-Pillar Constituent Penetration Rates:* Compares participation across all four dimensions.
@@ -173,60 +267,39 @@ All filters reside in the collapsible left sidebar and default to "All" options:
 
 ---
 
-## 6. KPI Framework & Methodology
+## 7. Complete KPI Framework & Metric Directory
 
-The table below provides a complete reference for all strategic performance indicators calculated across the portal:
+The following directory outlines every Key Performance Indicator computed in the application, organized by its specific **Dashboard Module**:
 
-| Strategic Pillar | Metric Name | Business Definition | Underlying Calculation Formula | Benchmark / Target |
+| Dashboard Module | Metric Name | Business Definition | Underlying Calculation Formula | Benchmark / Target |
 | :--- | :--- | :--- | :--- | :--- |
-| **Financial Health** | Total Philanthropic Revenue | Total dollars committed in FY26 across all university accounts. | `Sum(Giving_Amount_FY26)` | Annual target: $3.0M to $6.5M |
-| **Financial Health** | Cost per Dollar Raised (CPDR) | Direct outreach expense incurred to secure one dollar of revenue. | `Sum(Marketing_Outreach_Cost_FY26) / Sum(Giving_Amount_FY26)` | CASE standard: < $0.20 (Ideal < $0.10) |
-| **Financial Health** | Marketing ROI Multiple | Ratio of philanthropic dollars generated per marketing dollar spent. | `Sum(Giving_Amount_FY26) / Sum(Marketing_Outreach_Cost_FY26)` | Association of Fundraising Professionals: > 6.7x |
-| **Financial Health** | McDill24 Giving Day Total | Commitments secured during the 24-hour university blitz. | `Sum(McGill24_Gift_Amount_FY26)` | Target: > 18% of annual revenue |
-| **Lifecycle & Pipeline** | Active Donors | Unique constituents making at least one gift during the fiscal year. | `Count(Constituent_ID where Gift_Count_FY26 > 0)` | Target: 4,000 to 4,800 donors |
-| **Lifecycle & Pipeline** | Alumni Participation Rate | Proportion of addressable alumni who contributed financially in FY26. | `(Active Donors / Total Filtered Population) * 100` | U15 Canadian Peer Median: 8% to 12% |
-| **Lifecycle & Pipeline** | Consecutive Donor Retention | Percentage of prior-year (FY25) donors renewing their gift in FY26. | `(Donated_FY25 & Donated_FY26 Donors / Donated_FY25 Donors) * 100` | CASE National Average: 60% to 65% |
-| **Lifecycle & Pipeline** | Lapsed Reactivation Rate | Percentage of inactive prior donors who resumed giving in FY26. | `(Donated_FY26 & Gave_Prior & ~Donated_FY25) / Lapsed Pool * 100` | CASE Benchmark: 10% to 12% |
-| **Lifecycle & Pipeline** | Monthly Sustainer Share | Share of active donors enrolled in automated recurring giving. | `(Count where Is_Monthly_Sustainer_FY26 == 1 / Active Donors) * 100` | Higher Ed Target: 20% to 25% |
-| **Marketing Efficiency**| Email Open Rate | Proportion of delivered advancement marketing emails opened. | `Sum(Emails_Opened_FY26) / Sum(Emails_Delivered_FY26) * 100` | Industry Average: ~28% |
-| **Marketing Efficiency**| GA4 Portal Conversion Rate | Share of giving page visitors who completed a gift transaction. | `(Visitors with Pageviews & Donated_FY26 / Total Visitors) * 100` | Non-profit E-Commerce: 15% to 22% |
-| **CASE AEM Framework**| Experiential Pillar Rate | Share of alumni participating in at least one university event. | `(Count where Events_Attended_FY26 > 0 / Total Population) * 100` | CASE Standard: 10% to 15% |
-| **CASE AEM Framework**| Ticket Show Realization | Percentage of event registrants who attended the scheduled event. | `Sum(Events_Attended_FY26) / Sum(Events_Registered_FY26) * 100` | Industry Standard: 55% to 65% |
-| **CASE AEM Framework**| Multi-Modal Engagement Lift| Share of alumni active in two or more of the 4 CASE dimensions. | `(Count where CASE_Pillar_Count >= 2 / Total Population) * 100` | Multi-modal alumni show 9x giving lift |
-| **Major Gifts** | Tier 1 Capacity Conversion | Participation rate among prospects rated with $100k+ wealth capacity. | `(Tier 1 Donors / Total Tier 1 Prospects) * 100` | Major Gift Goal: > 60% participation |
-
----
-
-## 7. Machine Learning Pipeline & Propensity Simulator
-
-### Predictive Objective & Target Variable
-The predictive analytics engine models **Giving Propensity ($P(\text{Donation} = 1)$)**, defined as the likelihood that an addressable constituent completes a donation in the current reporting fiscal year (`Gift_Count_FY26 > 0`).
-
-### Feature Selection & Preventing Data Leakage
-To prevent data leakage, all post-decision transaction features and contemporaneous campaign outcomes are strictly excluded from the feature space:
-* **Excluded Target-Leaking Columns:** `Gift_Count_FY26`, `Giving_Amount_FY26`, `McGill24_Gift_Amount_FY26`, `Is_Monthly_Sustainer_FY26`, and `Last_Gift_Date`.
-* **Included Historical & Behavioral Predictors:**
-  1. *Demographic Indicators:* Years since graduation (`2026 - Class_Year`), academic degree type, faculty wealth multiplier, and geographic region.
-  2. *Capacity Ratings:* Wealth screening tier score mapped on a numerical capacity scale (Tier 1 = 3.0, Tier 2 = 2.2, Tier 3 = 1.4, Tier 4 = 0.7, Tier 5 = 0.0, Unrated = 0.1).
-  3. *Digital Engagement Signals:* Log-transformed email click count (`np.log1p(Emails_Clicked_FY26)`), digital affinity score, and GA4 giving portal pageviews (`np.log1p(GA4_Giving_Page_Views_FY26)`).
-  4. *Experiential & Leadership Attributes:* Log-transformed lifetime event attendance, FY26 event attendance count, and active volunteer status (`Is_Active_Volunteer_FY26`).
-  5. *Longitudinal Donor History:* Cumulative prior gift counts and multi-year giving flags (`Gift_Count_FY24`, `Giving_Amount_FY24`, and `Gave_Prior`).
-
-### Latent Propensity Formula
-The behavioral generation and downstream propensity scoring use a multi-factor equation calibrated against historical giving patterns:
-
-```text
-Latent_Score = 0.35 * Wealth_Score 
-             + 0.22 * Age_Factor 
-             + 0.18 * ln(1 + Lifetime_Events) 
-             + 0.16 * ln(1 + FY26_Events) 
-             + 0.12 * ln(1 + Email_Clicks) 
-             + 0.08 * ln(1 + GA4_Pageviews) 
-             + 0.25 * Volunteer_Flag 
-             + Gaussian_Noise(0, 0.35)
-```
-
-Constituents are segmented into priority deciles based on calculated propensity. High-propensity constituents with high wealth screening ratings who have not yet donated represent prime discovery prospects for major gift discovery and targeted annual fund appeals.
+| **Executive Overview** | Total Revenue | Cumulative philanthropic gifts, pledges, and outright commitments secured in FY26. | `Sum(Giving_Amount_FY26)` | Annual Target: $3.0M to $6.5M |
+| **Executive Overview** | Active Donors | Total unique addressable constituents who completed at least one monetary donation in FY26. | `Count(Constituent_ID where Gift_Count_FY26 > 0)` | Annual Target: 4,000 to 4,800 |
+| **Executive Overview** | Participation Rate | Proportion of the addressable alumni universe contributing financially in FY26. | `(Active Donors / Total Filtered Count) * 100` | U15 Peer Median: 8.0% to 12.0% |
+| **Executive Overview** | Retention Rate | Proportion of prior-year (FY25) donors who renewed their financial support in FY26. | `(Donors in FY25 & FY26 / Donors in FY25) * 100` | CASE Higher Ed Average: 60% to 65% |
+| **Executive Overview** | Average Gift Yield | Average revenue yield per active contributing donor. | `Total FY26 Revenue / Active Donors FY26` | U15 Peer Median: $725 |
+| **Executive Overview** | Marketing ROI | Return multiple measuring revenue generated per dollar of marketing outreach spent. | `Total FY26 Revenue / Total Outreach Cost` | Best-in-Class Benchmark: > 6.7x |
+| **Executive Overview** | McDill24 Campaign | Philanthropic commitments mobilized during the 24-hour giving day blitz. | `Sum(McGill24_Gift_Amount_FY26)` | Target: > 18.0% of Annual Revenue |
+| **Executive Overview** | Monthly Sustainers | Count and proportion of active donors contributing via automated monthly gifts. | `(Donors with Gift_Count_FY26 >= 6 / Active Donors) * 100` | Industry Standard: 20% to 25% |
+| **Executive Overview** | Campaign Goal Pace | Cumulative FY26 philanthropic revenue pacing against the strategic $100M campaign target. | `(Total FY26 Revenue / $100,000,000) * 100` | Multi-Year Campaign Trajectory |
+| **Philanthropic Health** | FY26 Total Commitments | Gross philanthropic commitments received across all funds, chairs, and faculties. | `Sum(Giving_Amount_FY26)` | Operational Plan Target: $3.25M |
+| **Philanthropic Health** | Average Gift Yield | Average philanthropic revenue yield per active donor across the filtered universe. | `Total Revenue FY26 / Active Donors FY26` | U15 Peer Median: $725 |
+| **Philanthropic Health** | McDill24 Campaign | Commitments secured during the 24-hour university-wide crowdfunding blitz. | `Sum(McGill24_Gift_Amount_FY26)` | Target: > 18.0% of Annual Revenue |
+| **Donor Lifecycle** | Consecutive Retention | Percentage of FY25 active donors who renewed their financial contribution in FY26. | `(Donated FY25 & Donated FY26 / Donated FY25) * 100` | CASE Benchmark: 60.0% to 65.0% |
+| **Donor Lifecycle** | Lapsed Reactivation | Percentage of prior donors who skipped FY25 but were reactivated in FY26. | `(Donated FY26 & Gave Prior & ~Donated FY25) / Lapsed Pool * 100` | CASE Benchmark: 10.0% to 12.0% |
+| **Donor Lifecycle** | New Acquisition | Conversion rate of lifetime non-donors making their first university gift in FY26. | `(First-Time Donors FY26 / Addressable Never-Givers) * 100` | Industry Benchmark: 3.0% to 6.0% |
+| **Donor Lifecycle** | Monthly Sustainers | Proportion of active donors enrolled in automated recurring monthly giving. | `(Donors with Gift_Count_FY26 >= 6 / Active Donors) * 100` | Industry Standard: 20.0% to 25.0% |
+| **Marketing Efficiency**| Cost per $ Raised (CPDR) | Direct marketing expenditure incurred for each single dollar of revenue raised. | `Total Outreach Cost / Total Revenue FY26` | Association of Fundraising Professionals: < $0.15 |
+| **Marketing Efficiency**| Marketing ROI | Efficiency ratio measuring revenue return generated per marketing dollar invested. | `Total Revenue FY26 / Total Outreach Cost` | Best-in-Class Benchmark: > 6.7x |
+| **Marketing Efficiency**| Email Open Rate | Engagement rate of direct digital appeal emails delivered to alumni. | `(Total Emails Opened / Total Emails Delivered) * 100` | Higher Ed Benchmark: 25% to 30% |
+| **Marketing Efficiency**| GA4 Web Conversion | Share of giving portal web visitors who successfully completed a donation. | `(Web Visitors who Donated FY26 / Total Web Visitors) * 100` | Non-Profit E-Commerce: 15% to 22% |
+| **CASE 4-Pillar (AEM)** | Event Attendance Rate | Proportion of alumni participating in at least one university event in FY26. | `(Count with Events_Attended_FY26 > 0 / Total Alumni) * 100` | CASE Experiential Target: 10% to 15% |
+| **CASE 4-Pillar (AEM)** | Ticket Show Rate | Percentage of event registrants who physically or virtually attended programming. | `(Total Events Attended / Total Events Registered) * 100` | Industry Attendance Average: 55% to 65% |
+| **CASE 4-Pillar (AEM)** | 2+ CASE Modes | Share of alumni participating across two or more CASE engagement pillars. | `(Count with CASE_Pillar_Count >= 2 / Total Universe) * 100` | Multi-Modal Lift: 9x higher giving rate |
+| **CASE 4-Pillar (AEM)** | Active Volunteers | Proportion of alumni serving as mentors, committee members, or ambassadors. | `(Count with Is_Active_Volunteer_FY26 == 1 / Total Universe) * 100` | CASE Volunteer Benchmark: 4% to 7% |
+| **Prospect Capacity** | Top Tier Giving | Philanthropic commitments secured from major and principal gift prospects (Tiers 1 & 2). | `Sum(Giving_Amount_FY26 for Wealth Tiers 1 and 2)` | Major gift tiers yield > 65% of funds |
+| **Prospect Capacity** | Tier 1 ($100k+) Conv | Philanthropic conversion rate among highest-capacity rated alumni prospects. | `(Tier 1 Donors / Total Tier 1 Rated Prospects) * 100` | Principal Gift Target: > 60% participation |
+| **Prospect Capacity** | Tier 2 ($25k-$99k) Conv| Philanthropic conversion rate among leadership annual and major gift prospects. | `(Tier 2 Donors / Total Tier 2 Rated Prospects) * 100` | Major Gift Target: > 45% participation |
 
 ---
 
@@ -281,12 +354,12 @@ Constituents are segmented into priority deciles based on calculated propensity.
 
 1. **Build the Docker Image:**
    ```bash
-   docker build -t mcdill-advancement-analytics:latest .
+   docker build -t university-advancement:latest .
    ```
 
 2. **Run the Container Locally:**
    ```bash
-   docker run -d --name mcdill_dashboard -p 8501:8501 mcdill-advancement-analytics:latest
+   docker run -d --name mcdill_dashboard -p 8501:8501 university-advancement:latest
    ```
 
 3. **Access the Containerized Portal:**

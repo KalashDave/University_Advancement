@@ -5,7 +5,7 @@
 services:
   # Web service running the Streamlit advancement intelligence portal
   - type: web
-    name: mcdill-advancement-analytics
+    name: university-advancement
     # Use custom Dockerfile rather than standard Python buildpack
     runtime: docker
     plan: free

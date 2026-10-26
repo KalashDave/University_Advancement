@@ -31,7 +31,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl \
 
 # DOCKER LAYER CACHING STRATEGY:
 # Copy requirements.txt separately and install Python dependencies before copying source code.
-# This prevents re-installing heavy packages (pandas, plotly, scikit-learn) on every code edit.
+# This prevents re-installing packages (streamlit, pandas, numpy, plotly) on every code edit.
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
