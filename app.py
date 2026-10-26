@@ -277,10 +277,70 @@ st.markdown("""
         color: #FFFFFF;
     }
     
+    /* Floating GitHub Top Corner Badge */
+    .github-corner-btn {
+        position: fixed;
+        top: 14px;
+        right: 20px;
+        z-index: 9999999;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        background: #1E293B;
+        color: #F8FAFC !important;
+        text-decoration: none !important;
+        font-family: 'Inter', -apple-system, sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        padding: 6px 14px;
+        border-radius: 20px;
+        border: 1px solid #334155;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
+    .github-corner-btn:hover {
+        background: #334155;
+        color: #38BDF8 !important;
+        border-color: #38BDF8;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 18px rgba(56, 189, 248, 0.35);
+    }
+    
+    .github-corner-btn svg {
+        fill: currentColor;
+        transition: transform 0.2s ease;
+    }
+    
+    .github-corner-btn:hover svg {
+        transform: scale(1.12);
+        fill: #38BDF8;
+    }
+
+    @media (max-width: 640px) {
+        .github-corner-btn span {
+            display: none;
+        }
+        .github-corner-btn {
+            padding: 7px;
+            border-radius: 50%;
+            top: 12px;
+            right: 12px;
+        }
+    }
+    
     /* Hide Default Header/Footer */
     footer {visibility: hidden;}
     #MainMenu {visibility: hidden;}
 </style>
+
+<!-- Clickable GitHub Icon Button in Top Corner -->
+<a href="https://github.com/KalashDave/University_Advancement" target="_blank" rel="noopener noreferrer" class="github-corner-btn" title="View Source on GitHub: KalashDave/University_Advancement">
+    <svg height="18" width="18" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
+    </svg>
+    <span>GitHub</span>
+</a>
 """, unsafe_allow_html=True)
 
 
@@ -680,6 +740,18 @@ with st.sidebar:
     
     if st.button("Reset Filters", use_container_width=True):
         st.rerun()
+
+    st.markdown("---")
+    st.markdown("""
+<div style="text-align: center;">
+    <a href="https://github.com/KalashDave/University_Advancement" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; justify-content: center; gap: 8px; background-color: #0F172A; border: 1px solid #334155; border-radius: 8px; padding: 8px 12px; color: #F8FAFC; text-decoration: none; font-size: 13px; font-weight: 600; transition: all 0.2s ease;">
+        <svg height="16" width="16" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
+        </svg>
+        <span>GitHub Repository</span>
+    </a>
+</div>
+""", unsafe_allow_html=True)
 
 # Apply de-cluttered filters
 filtered_df = df_master.copy()
@@ -2002,4 +2074,11 @@ elif selected_module == "💎 Prospect Capacity & Faculty Intelligence":
 # 6. MINIMAL FOOTER
 # =============================================================================
 st.markdown("---")
-st.caption("McDill University Advancement Analytics • FY2026 Reporting Year")
+st.markdown("""
+<div style="text-align: center; color: #64748B; font-size: 13px; padding-bottom: 24px;">
+    McDill University Advancement Analytics • FY2026 Reporting Year • 
+    <a href="https://github.com/KalashDave/University_Advancement" target="_blank" rel="noopener noreferrer" style="color: #38BDF8; text-decoration: none; font-weight: 500;">
+        GitHub Repository
+    </a>
+</div>
+""", unsafe_allow_html=True)
