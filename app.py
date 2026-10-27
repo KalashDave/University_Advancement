@@ -45,6 +45,7 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 import os
+import streamlit_shadcn_ui as ui
 
 # =============================================================================
 # 1. PAGE CONFIGURATION & EXECUTIVE HIGH-CONTRAST DARK THEME
@@ -1126,81 +1127,57 @@ if selected_module == "📊 Executive Overview (Landing Dashboard)":
         details="This strategic briefing dashboard monitors cumulative philanthropic revenue, donor counts, retention rate, cost to raise a dollar (CRD), giving day performance, and pacing toward the annual $4.00M institutional target. It provides comprehensive constituent distributions spanning graduation vintage, generational age cohorts, gender identity, global countries, academic faculties, degree levels, wealth screening capacity tiers, preferred language, email deliverability, giving frequency, and regional North American jurisdictions."
     )
     
-    # 6 Top-Line Primary KPI Cards
+    # 6 Top-Line Primary KPI Cards (shadcn ui.metric_card)
     k1, k2, k3, k4, k5, k6 = st.columns(6)
     
     with k1:
-        with st.container(border=True):
-            st.metric(
-                label="Total Revenue",
-                value=f"${tot_rev_fy26/1e6:.2f}M",
-                delta="+14% YoY",
-                help=format_tooltip(
-                    description="Total cumulative philanthropic gifts, pledges, and outright commitments booked in FY26 across all university funds.",
-                    calculation="Sum of Giving_Amount_FY26 for all constituents within active filter criteria.",
-                    benchmark="U15 Group of Canadian Research Universities Benchmark: $3.0M - $6.5M."
-                )
-            )
+        ui.metric_card(
+            label="Total Revenue",
+            value=f"${tot_rev_fy26/1e6:.2f}M",
+            delta="+14% YoY",
+            description="FY26 Gross Commitments",
+            key="kpi_tot_rev"
+        )
     with k2:
-        with st.container(border=True):
-            st.metric(
-                label="Active Donors",
-                value=f"{donors_fy26:,}",
-                delta="+7% YoY",
-                help=format_tooltip(
-                    description="Total unique addressable constituents who completed at least one monetary donation in FY26.",
-                    calculation="Distinct count of Constituent_IDs with Gift_Count_FY26 > 0.",
-                    benchmark="Institutional Annual Target: 4,000 - 4,800 active donors."
-                )
-            )
+        ui.metric_card(
+            label="Active Donors",
+            value=f"{donors_fy26:,}",
+            delta="+7% YoY",
+            description="Contributing alumni",
+            key="kpi_donors"
+        )
     with k3:
-        with st.container(border=True):
-            st.metric(
-                label="Participation",
-                value=f"{part_rate:.1f}%",
-                delta="+1.2%",
-                help=format_tooltip(
-                    description="Proportion of the addressable, contactable alumni universe who contributed financially in FY26.",
-                    calculation="(FY26 Active Donors / Total Addressable Universe Count) × 100.",
-                    benchmark="CASE U15 Higher Education Standard: 8.0% - 12.0%."
-                )
-            )
+        ui.metric_card(
+            label="Participation",
+            value=f"{part_rate:.1f}%",
+            delta="+1.2%",
+            description="Addressable yield",
+            key="kpi_part"
+        )
     with k4:
-        with st.container(border=True):
-            st.metric(
-                label="Retention Rate",
-                value=f"{retention_rate:.1f}%",
-                delta="+2.5%",
-                help=format_tooltip(
-                    description="Proportion of prior-year (FY25) donors who renewed their financial support in FY26.",
-                    calculation="(Donors giving in BOTH FY25 and FY26 / Total Active Donors in FY25) × 100.",
-                    benchmark="CASE National Advancement Standard: 60.0% - 65.0%."
-                )
-            )
+        ui.metric_card(
+            label="Retention Rate",
+            value=f"{retention_rate:.1f}%",
+            delta="+2.5%",
+            description="Consecutive renewals",
+            key="kpi_ret"
+        )
     with k5:
-        with st.container(border=True):
-            st.metric(
-                label="Average Gift",
-                value=f"${avg_gift:,.0f}",
-                delta="+5% YoY",
-                help=format_tooltip(
-                    description="Mean philanthropic commitment per contributing donor across all colleges and designations.",
-                    calculation="Total FY26 Philanthropic Revenue / Total FY26 Active Donors.",
-                    benchmark="Institutional Target: $700 - $850 per donor."
-                )
-            )
+        ui.metric_card(
+            label="Average Gift",
+            value=f"${avg_gift:,.0f}",
+            delta="+5% YoY",
+            description="Mean commitment",
+            key="kpi_avg"
+        )
     with k6:
-        with st.container(border=True):
-            st.metric(
-                label="Marketing ROI",
-                value=f"{roi_mult:.1f}x",
-                delta="+2.1x",
-                help=format_tooltip(
-                    description="Multiplier of philanthropic revenue generated relative to direct marketing and outreach costs.",
-                    calculation="Total FY26 Revenue / Total Marketing_Outreach_Cost_FY26.",
-                    benchmark="Association of Fundraising Professionals (AFP) Benchmark: > 6.7x."
-                )
-            )
+        ui.metric_card(
+            label="Marketing ROI",
+            value=f"{roi_mult:.1f}x",
+            delta="+2.1x",
+            description="Return on marketing",
+            key="kpi_roi"
+        )
             
     # 3 Secondary KPI Cards (Centered and Identical Width to Top 6 Cards)
     mcdill24_rev = filtered_df['McGill24_Gift_Amount_FY26'].sum()
@@ -1210,41 +1187,29 @@ if selected_module == "📊 Executive Overview (Landing Dashboard)":
     
     _, b1, b2, b3, _ = st.columns([1.5, 1, 1, 1, 1.5])
     with b1:
-        with st.container(border=True):
-            st.metric(
-                label="McDill24 Giving Day",
-                value=f"${mcdill24_rev/1e3:,.0f}K",
-                delta=f"{(mcdill24_rev/tot_rev_fy26*100):.1f}% Share of Total",
-                help=format_tooltip(
-                    description="Philanthropic revenue secured during the university's annual 24-hour digital giving campaign.",
-                    calculation="Sum of McGill24_Gift_Amount_FY26 across all participating alumni.",
-                    benchmark="Campaign Target: 15.0% - 25.0% of total annual commitments."
-                )
-            )
+        ui.metric_card(
+            label="McDill24 Giving Day",
+            value=f"${mcdill24_rev/1e3:,.0f}K",
+            delta=f"{(mcdill24_rev/tot_rev_fy26*100):.1f}% Share",
+            description="24-Hr Crowdfunding",
+            key="kpi_mcdill24"
+        )
     with b2:
-        with st.container(border=True):
-            st.metric(
-                label="Monthly Sustainers",
-                value=f"{sustainers_cnt:,}",
-                delta=f"{(sustainers_cnt/donors_fy26*100):.1f}% of Donors",
-                help=format_tooltip(
-                    description="Donors enrolled in automated, recurring monthly gift subscriptions providing steady predictable cashflow.",
-                    calculation="Count of constituents where Is_Monthly_Sustainer_FY26 = 1 (Gift_Count_FY26 >= 6).",
-                    benchmark="Strategic Institutional Objective: 20.0% - 25.0% of active donors."
-                )
-            )
+        ui.metric_card(
+            label="Monthly Sustainers",
+            value=f"{sustainers_cnt:,}",
+            delta=f"{(sustainers_cnt/donors_fy26*100):.1f}% of Donors",
+            description="Recurring gift velocity",
+            key="kpi_sustainers"
+        )
     with b3:
-        with st.container(border=True):
-            st.metric(
-                label="Campaign Goal Pace",
-                value=f"{pct_goal:.1f}%",
-                delta=f"${(target_goal - tot_rev_fy26)/1e3:,.0f}K to Target",
-                help=format_tooltip(
-                    description="Cumulative progress achieved toward the $4.00M annual institutional advancement stretch target.",
-                    calculation="(Total FY26 Revenue / $4,000,000 Annual Target) × 100.",
-                    benchmark="Year-end target: 100% pacing by June 30."
-                )
-            )
+        ui.metric_card(
+            label="Campaign Goal Pace",
+            value=f"{pct_goal:.1f}%",
+            delta=f"${(target_goal - tot_rev_fy26)/1e3:,.0f}K to Target",
+            description="$4.00M Annual Goal",
+            key="kpi_pacing"
+        )
             
     st.markdown("<div style='margin-bottom: 12px;'></div>", unsafe_allow_html=True)
     
@@ -1707,41 +1672,29 @@ elif selected_module == "🏛️ Philanthropic Health & Revenue":
     p1, p2, p3 = st.columns(3)
     mcdill24_rev = filtered_df['McGill24_Gift_Amount_FY26'].sum()
     with p1:
-        with st.container(border=True):
-            st.metric(
-                label="FY26 Total Commitments",
-                value=f"${tot_rev_fy26:,.0f}",
-                delta="+14.2% YoY",
-                help=format_tooltip(
-                    description="Gross philanthropic commitments received across all funds, chairs, and faculties in FY26.",
-                    calculation="Sum of Giving_Amount_FY26 across all filtered constituent records.",
-                    benchmark="Annual Operational Plan Target: $3.25M."
-                )
-            )
+        ui.metric_card(
+            label="FY26 Total Commitments",
+            value=f"${tot_rev_fy26:,.0f}",
+            delta="+14.2% YoY",
+            description="Gross commitments across all funds",
+            key="v2_kpi_rev"
+        )
     with p2:
-        with st.container(border=True):
-            st.metric(
-                label="Average Gift Yield",
-                value=f"${avg_gift:,.2f}",
-                delta="Median: $150",
-                help=format_tooltip(
-                    description="Average philanthropic revenue yield per active donor, reflecting gift size distribution.",
-                    calculation="Total FY26 Revenue / Total FY26 Active Donors.",
-                    benchmark="U15 Peer Median: $725."
-                )
-            )
+        ui.metric_card(
+            label="Average Gift Yield",
+            value=f"${avg_gift:,.2f}",
+            delta="Median: $150",
+            description="Revenue yield per active donor",
+            key="v2_kpi_avg"
+        )
     with p3:
-        with st.container(border=True):
-            st.metric(
-                label="McDill24 Campaign",
-                value=f"${mcdill24_rev:,.0f}",
-                delta=f"{(mcdill24_rev/tot_rev_fy26*100):.1f}% Share",
-                help=format_tooltip(
-                    description="Philanthropic commitments mobilized during the 24-hour university-wide blitz.",
-                    calculation="Sum of McGill24_Gift_Amount_FY26 across all giving day transactions.",
-                    benchmark="Campaign Target: > 18.0% of annual revenue."
-                )
-            )
+        ui.metric_card(
+            label="McDill24 Campaign",
+            value=f"${mcdill24_rev:,.0f}",
+            delta=f"{(mcdill24_rev/tot_rev_fy26*100):.1f}% Share",
+            description="24-Hour crowdfunding revenue",
+            key="v2_kpi_mcdill24"
+        )
             
     # 2x2 Grid of Distinct Analytical Visualizations
     v2_r1_c1, v2_r1_c2 = st.columns(2)
@@ -1909,53 +1862,37 @@ elif selected_module == "🔄 Donor Lifecycle & Retention Funnel":
     
     l1, l2, l3, l4 = st.columns(4)
     with l1:
-        with st.container(border=True):
-            st.metric(
-                label="Consecutive Retention",
-                value=f"{retention_rate:.1f}%",
-                delta="+2.5%",
-                help=format_tooltip(
-                    description="Percentage of FY25 active donors who renewed their financial contribution in FY26.",
-                    calculation="(Donors with Gift_Count_FY25 > 0 AND Gift_Count_FY26 > 0) / Total Donors with Gift_Count_FY25 > 0 × 100.",
-                    benchmark="CASE National Standard: 60.0% - 65.0%."
-                )
-            )
+        ui.metric_card(
+            label="Consecutive Retention",
+            value=f"{retention_rate:.1f}%",
+            delta="+2.5%",
+            description="FY25 to FY26 renewal rate",
+            key="v3_kpi_ret"
+        )
     with l2:
-        with st.container(border=True):
-            st.metric(
-                label="Lapsed Reactivation",
-                value=f"{react_rate:.1f}%",
-                delta=f"{reactivated:,} Donors",
-                help=format_tooltip(
-                    description="Percentage of prior lapsed donors who skipped FY25 but were successfully reactivated in FY26.",
-                    calculation="(Donated FY26 AND Gave Prior to FY25 AND Did NOT Donate FY25) / Total Prior Lapsed Pool × 100.",
-                    benchmark="CASE Benchmark: 10.0% - 12.0%."
-                )
-            )
+        ui.metric_card(
+            label="Lapsed Reactivation",
+            value=f"{react_rate:.1f}%",
+            delta=f"{reactivated:,} Donors",
+            description="Prior lapsed pool reactivated",
+            key="v3_kpi_react"
+        )
     with l3:
-        with st.container(border=True):
-            st.metric(
-                label="New Acquisition",
-                value=f"{acq_rate:.1f}%",
-                delta=f"{acquired:,} Donors",
-                help=format_tooltip(
-                    description="Conversion rate of lifetime non-donors making their very first gift to the university in FY26.",
-                    calculation="(First-Time Donors in FY26 / Total Addressable Never-Givers Pool) × 100.",
-                    benchmark="Higher Education Benchmark: 3.0% - 6.0%."
-                )
-            )
+        ui.metric_card(
+            label="New Acquisition",
+            value=f"{acq_rate:.1f}%",
+            delta=f"{acquired:,} Donors",
+            description="First-time contributing alumni",
+            key="v3_kpi_acq"
+        )
     with l4:
-        with st.container(border=True):
-            st.metric(
-                label="Monthly Sustainers",
-                value=f"{(sustainers/donors_fy26*100):.1f}%",
-                delta=f"{sustainers:,} Donors",
-                help=format_tooltip(
-                    description="Proportion of the active donor base contributing via automated monthly recurring donations.",
-                    calculation="(Monthly Sustainer Count / Total FY26 Donors) × 100.",
-                    benchmark="Industry Standard: 20.0% - 25.0%."
-                )
-            )
+        ui.metric_card(
+            label="Monthly Sustainers",
+            value=f"{(sustainers/donors_fy26*100):.1f}%",
+            delta=f"{sustainers:,} Donors",
+            description="Automated recurring donors",
+            key="v3_kpi_sust"
+        )
 
     # 2x2 Grid for Lifecycle
     v3_r1_c1, v3_r1_c2 = st.columns(2)
@@ -2143,53 +2080,37 @@ elif selected_module == "📈 Marketing Efficiency & Channels":
     
     m1, m2, m3, m4 = st.columns(4)
     with m1:
-        with st.container(border=True):
-            st.metric(
-                label="Cost per $ Raised",
-                value=f"${cpdr:.4f}",
-                delta="AFP Standard < $0.15",
-                help=format_tooltip(
-                    description="Direct marketing and solicitation expenditure incurred for each single dollar of philanthropic revenue secured.",
-                    calculation="Total Marketing_Outreach_Cost_FY26 / Total FY26 Revenue.",
-                    benchmark="Association of Fundraising Professionals (AFP) Standard: Under $0.15."
-                )
-            )
+        ui.metric_card(
+            label="Cost per $ Raised",
+            value=f"${cpdr:.4f}",
+            delta="AFP Standard < $0.15",
+            description="Solicitation cost per dollar",
+            key="v4_kpi_cpdr"
+        )
     with m2:
-        with st.container(border=True):
-            st.metric(
-                label="Marketing ROI",
-                value=f"{roi_mult:.1f}x",
-                delta=f"Total Spend: ${tot_cost:,.0f}",
-                help=format_tooltip(
-                    description="Overall marketing efficiency ratio measuring revenue return generated per marketing dollar invested.",
-                    calculation="Total FY26 Revenue / Total Marketing_Outreach_Cost_FY26.",
-                    benchmark="AFP Best-in-Class Benchmark: > 6.7x."
-                )
-            )
+        ui.metric_card(
+            label="Marketing ROI",
+            value=f"{roi_mult:.1f}x",
+            delta=f"Spend: ${tot_cost:,.0f}",
+            description="Revenue generated per dollar spent",
+            key="v4_kpi_roi"
+        )
     with m3:
-        with st.container(border=True):
-            st.metric(
-                label="Email Open Rate",
-                value=f"{open_rate:.1f}%",
-                delta="Higher Ed Avg ~28%",
-                help=format_tooltip(
-                    description="Engagement rate of direct digital appeal emails delivered to alumni and prospective donors.",
-                    calculation="(Total Emails_Opened_FY26 / Total Emails_Delivered_FY26) × 100.",
-                    benchmark="Higher Education Nonprofit Benchmark: 25.0% - 30.0%."
-                )
-            )
+        ui.metric_card(
+            label="Email Open Rate",
+            value=f"{open_rate:.1f}%",
+            delta="Higher Ed Avg ~28%",
+            description="Digital appeal email deliverability",
+            key="v4_kpi_open"
+        )
     with m4:
-        with st.container(border=True):
-            st.metric(
-                label="GA4 Web Conversion",
-                value=f"{web_conv:.1f}%",
-                delta=f"{web_donors:,} Donors",
-                help=format_tooltip(
-                    description="Proportion of unique visitors to the institutional online giving portal who completed a gift transaction.",
-                    calculation="(Constituents with GA4 Giving Page Views AND Donated FY26 / Total Constituents with Giving Page Views) × 100.",
-                    benchmark="Nonprofit E-Commerce Giving Benchmark: 15.0% - 22.0%."
-                )
-            )
+        ui.metric_card(
+            label="GA4 Web Conversion",
+            value=f"{web_conv:.1f}%",
+            delta=f"{web_donors:,} Donors",
+            description="Giving page visitor to gift rate",
+            key="v4_kpi_web"
+        )
             
     # 2x2 Grid for Marketing
     v4_r1_c1, v4_r1_c2 = st.columns(2)
@@ -2388,53 +2309,37 @@ elif selected_module == "🤝 CASE 4-Pillar Engagement (AEM)":
     
     e1, e2, e3, e4 = st.columns(4)
     with e1:
-        with st.container(border=True):
-            st.metric(
-                label="Event Attendance",
-                value=f"{event_rate:.1f}%",
-                delta=f"{events_att:,} Alumni",
-                help=format_tooltip(
-                    description="Proportion of alumni participating in at least one university event (Experiential Pillar).",
-                    calculation="(Constituents with Events_Attended_FY26 > 0 / Total Addressable Alumni) × 100.",
-                    benchmark="CASE Experiential Engagement Standard: 10.0% - 15.0%."
-                )
-            )
+        ui.metric_card(
+            label="Event Attendance",
+            value=f"{event_rate:.1f}%",
+            delta=f"{events_att:,} Alumni",
+            description="Experiential pillar attendance",
+            key="v5_kpi_att"
+        )
     with e2:
-        with st.container(border=True):
-            st.metric(
-                label="Ticket Show Rate",
-                value=f"{show_rate:.1f}%",
-                delta="Realized Attendees",
-                help=format_tooltip(
-                    description="Percentage of event registrants who physically or virtually attended the registered programming.",
-                    calculation="(Total Events_Attended_FY26 / Total Events_Registered_FY26) × 100.",
-                    benchmark="Industry Event Attendance Average: 55.0% - 65.0%."
-                )
-            )
+        ui.metric_card(
+            label="Ticket Show Rate",
+            value=f"{show_rate:.1f}%",
+            delta="Realized Attendees",
+            description="Registered vs attended show rate",
+            key="v5_kpi_show"
+        )
     with e3:
-        with st.container(border=True):
-            st.metric(
-                label="2+ CASE Modes",
-                value=f"{(multi_pillar/n_filtered*100):.1f}%",
-                delta="43.7% Giving Rate",
-                help=format_tooltip(
-                    description="Percentage of alumni engaged across two or more CASE pillars (Philanthropic, Experiential, Volunteer, Communication).",
-                    calculation="(Constituents with CASE_Pillar_Count >= 2 / Total Universe) × 100.",
-                    benchmark="Multi-Modal Engagement Lift: Alumni in 2+ modes demonstrate 9x higher giving rates."
-                )
-            )
+        ui.metric_card(
+            label="2+ CASE Modes",
+            value=f"{(multi_pillar/n_filtered*100):.1f}%",
+            delta="43.7% Giving Rate",
+            description="Multi-pillar constituent breadth",
+            key="v5_kpi_multi"
+        )
     with e4:
-        with st.container(border=True):
-            st.metric(
-                label="Active Volunteers",
-                value=f"{(volunteers/n_filtered*100):.1f}%",
-                delta=f"{volunteers:,} Leaders",
-                help=format_tooltip(
-                    description="Share of constituents serving in an active institutional advisory, mentoring, or alumni board capacity (Volunteer Pillar).",
-                    calculation="(Constituents with Is_Active_Volunteer_FY26 = 1 / Total Universe) × 100.",
-                    benchmark="Higher Education Target: 4.0% - 7.0%."
-                )
-            )
+        ui.metric_card(
+            label="Active Volunteers",
+            value=f"{(volunteers/n_filtered*100):.1f}%",
+            delta=f"{volunteers:,} Leaders",
+            description="Volunteer leadership cadre",
+            key="v5_kpi_vol"
+        )
             
     # 2x2 Grid for CASE
     v5_r1_c1, v5_r1_c2 = st.columns(2)
@@ -2635,41 +2540,29 @@ elif selected_module == "💎 Prospect Capacity & Faculty Intelligence":
     
     w1, w2, w3 = st.columns(3)
     with w1:
-        with st.container(border=True):
-            st.metric(
-                label="Top Tier Giving",
-                value=f"${t1_t2_rev/1e6:.2f}M",
-                delta=f"{(t1_t2_rev/tot_rev_fy26*100):.1f}% Total Funds",
-                help=format_tooltip(
-                    description="Philanthropic commitments secured from major and principal gift prospects (Tiers 1 & 2).",
-                    calculation="Sum of Giving_Amount_FY26 for constituents rated Tier 1 ($100k+) or Tier 2 ($25k-$99k).",
-                    benchmark="Pareto Target: Major gift tiers generate > 65.0% of total institutional commitments."
-                )
-            )
+        ui.metric_card(
+            label="Top Tier Giving",
+            value=f"${t1_t2_rev/1e6:.2f}M",
+            delta=f"{(t1_t2_rev/tot_rev_fy26*100):.1f}% Total Funds",
+            description="Major gift tiers (Tiers 1 & 2)",
+            key="v6_kpi_toptier"
+        )
     with w2:
-        with st.container(border=True):
-            st.metric(
-                label=r"Tier 1 (\$100k+) Conv",
-                value=f"{t1_conv:.1f}%",
-                delta=f"{len(t1_df):,} Prospects",
-                help=format_tooltip(
-                    description="Philanthropic conversion rate among highest-capacity rated alumni prospects ($100,000+ estimated wealth).",
-                    calculation="(Tier 1 Donors with Gift_Count_FY26 > 0 / Total Tier 1 Rated Prospects) × 100.",
-                    benchmark="Principal Gift Solicitation Target: > 60.0% active participation."
-                )
-            )
+        ui.metric_card(
+            label=r"Tier 1 ($100k+) Conv",
+            value=f"{t1_conv:.1f}%",
+            delta=f"{len(t1_df):,} Prospects",
+            description="Principal gift capacity yield",
+            key="v6_kpi_t1conv"
+        )
     with w3:
-        with st.container(border=True):
-            st.metric(
-                label=r"Tier 2 (\$25k-\$99k) Conv",
-                value=f"{t2_conv:.1f}%",
-                delta=f"{len(t2_df):,} Prospects",
-                help=format_tooltip(
-                    description="Philanthropic conversion rate among leadership annual and major gift prospects ($25,000-$99,000 capacity).",
-                    calculation="(Tier 2 Donors with Gift_Count_FY26 > 0 / Total Tier 2 Rated Prospects) × 100.",
-                    benchmark="Major Gift Solicitation Target: > 45.0% active participation."
-                )
-            )
+        ui.metric_card(
+            label=r"Tier 2 ($25k-$99k) Conv",
+            value=f"{t2_conv:.1f}%",
+            delta=f"{len(t2_df):,} Prospects",
+            description="Major gift discovery conversion",
+            key="v6_kpi_t2conv"
+        )
             
     # 2x2 Grid for Faculty Intelligence
     v6_r1_c1, v6_r1_c2 = st.columns(2)
