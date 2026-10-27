@@ -699,63 +699,67 @@ def format_tooltip(description: str, calculation: str, benchmark: str = None) ->
     return "\n\n".join(lines)
 
 
-def render_view_banner(title: str, objective: str, visualizations: list[str] = None, pillars: list[dict] = None):
+def render_view_banner(title: str = "", objective: str = "", visualizations: list[str] = None, pillars: list[dict] = None):
     """
-    Renders an executive summary card at the head of each advancement module.
+    Renders a sleek, minimalist executive briefing strip at the head of each advancement module.
+
+    Design Features:
+    ----------------
+    - Omits redundant module titles (the active navigation button directly above already highlights the view).
+    - Omits verbose visualization bullet lists to keep text minimal and scannable.
+    - Presents a clean, high-contrast strategic brief badge with the 1-2 sentence core objective.
+    - For the CASE 4-Pillar module, presents an organized 4-card micro-grid detailing each engagement dimension.
 
     Parameters:
     -----------
-    title : str
-        Header title of the analytical module.
+    title : str, optional
+        Retained for backward-compatibility; omitted from rendered display.
     objective : str
         Business context and strategic objective of the module.
     visualizations : list of str, optional
-        Key analytical visualizations shown (used exclusively on Landing Dashboard).
+        Retained for backward-compatibility; omitted from rendered display.
     pillars : list of dict, optional
         Definitions of the 4 CASE AEM engagement pillars (used on CASE Module).
     """
-    if visualizations and len(visualizations) > 0:
-        items_html = "".join([f"<li style='margin-bottom: 5px; color: #CBD5E1;'>{item}</li>" for item in visualizations])
-        content_html = f"""<div style="display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 20px;">
-<div>
-<div style="font-size: 11.5px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px;">Module Scope & Objective</div>
-<div style="font-size: 14px; color: #E2E8F0; line-height: 1.55;">{objective}</div>
-</div>
-<div>
-<div style="font-size: 11.5px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px;">Key Analytics & Visualizations</div>
-<ul style="margin: 0; padding-left: 16px; font-size: 13.5px; line-height: 1.5;">
-{items_html}
-</ul>
-</div>
-</div>"""
+    desc_text = objective or title
 
-    elif pillars and len(pillars) > 0:
+    if pillars and len(pillars) > 0:
+        pillar_colors = {
+            "Philanthropic": "#34D399",
+            "Experiential": "#60A5FA",
+            "Volunteer": "#A78BFA",
+            "Communication": "#38BDF8"
+        }
         pillar_cards = []
         for p in pillars:
-            p_card = f"""<div style="background: #0F172A; border: 1px solid #334155; border-radius: 8px; padding: 12px 14px;">
-<div style="font-size: 13.5px; font-weight: 700; color: #FFFFFF; margin-bottom: 4px;">{p['icon']} {p['name']}</div>
-<div style="font-size: 12.5px; color: #94A3B8; line-height: 1.45;">{p['desc']}</div>
+            p_color = pillar_colors.get(p.get("name"), "#38BDF8")
+            p_card = f"""<div style="background: rgba(15, 23, 42, 0.7); border: 1px solid #334155; border-top: 2.5px solid {p_color}; border-radius: 8px; padding: 10px 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.2);">
+<div style="font-size: 13px; font-weight: 700; color: #FFFFFF; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+<span>{p['icon']}</span>
+<span>{p['name']}</span>
+</div>
+<div style="font-size: 12px; color: #94A3B8; line-height: 1.4;">{p['desc']}</div>
 </div>"""
             pillar_cards.append(p_card)
         pillars_grid = "".join(pillar_cards)
-        content_html = f"""<div>
-<div style="font-size: 11.5px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px;">Module Scope & Objective</div>
-<div style="font-size: 14px; color: #E2E8F0; line-height: 1.55; margin-bottom: 14px;">{objective}</div>
-<div style="font-size: 11.5px; font-weight: 700; color: #38BDF8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">The 4 CASE AEM Engagement Pillars</div>
+        
+        banner_html = f"""<div style="background: rgba(30, 41, 59, 0.45); border: 1px solid rgba(51, 65, 85, 0.65); border-left: 3px solid #A78BFA; border-radius: 8px; padding: 12px 16px 14px 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+<div style="font-size: 13.5px; color: #E2E8F0; line-height: 1.5; margin-bottom: 12px; display: flex; align-items: baseline; gap: 8px;">
+<span style="font-size: 10.5px; font-weight: 700; color: #A78BFA; letter-spacing: 0.06em; text-transform: uppercase; background: rgba(167, 139, 250, 0.14); padding: 2px 7px; border-radius: 4px; white-space: nowrap;">CASE FRAMEWORK</span>
+<span>{desc_text}</span>
+</div>
 <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
 {pillars_grid}
 </div>
 </div>"""
     else:
-        content_html = f"""<div>
-<div style="font-size: 11.5px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px;">Module Scope & Objective</div>
-<div style="font-size: 14.5px; color: #E2E8F0; line-height: 1.55;">{objective}</div>
+        banner_html = f"""<div style="background: rgba(30, 41, 59, 0.45); border: 1px solid rgba(51, 65, 85, 0.65); border-left: 3px solid #38BDF8; border-radius: 8px; padding: 9px 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+<div style="font-size: 13.5px; color: #E2E8F0; line-height: 1.5; display: flex; align-items: baseline; gap: 8px;">
+<span style="font-size: 10.5px; font-weight: 700; color: #38BDF8; letter-spacing: 0.06em; text-transform: uppercase; background: rgba(56, 189, 248, 0.14); padding: 2px 7px; border-radius: 4px; white-space: nowrap;">STRATEGIC BRIEF</span>
+<span>{desc_text}</span>
+</div>
 </div>"""
 
-    banner_html = f"""<div style="background-color: #1E293B; border: 1px solid #334155; border-left: 4px solid #ED1B2F; border-radius: 10px; padding: 14px 18px; margin-bottom: 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
-<div style="font-size: 17.5px; font-weight: 700; color: #FFFFFF; margin-bottom: 8px;">{title}</div>
-{content_html}
-</div>"""
     st.markdown(banner_html, unsafe_allow_html=True)
 
 
@@ -1015,18 +1019,7 @@ selected_module = st.session_state.selected_module
 if selected_module == "📊 Executive Overview (Landing Dashboard)":
     
     render_view_banner(
-        title="📊 Executive Overview Dashboard",
-        objective="Provides a unified single-pane executive summary of McDill University's overall philanthropic health, pacing toward annual strategic targets, and holistic alumni demographics across all constituent dimensions.",
-        visualizations=[
-            "9 Top-line institutional KPIs arranged in aligned executive tiers with YoY benchmarks",
-            "Multi-year revenue velocity (FY24-FY26) and Gift designation allocation share",
-            "Demographic distributions: Class Year graduation timeline, Generational age cohorts, Gender identity, and Global countries of residence",
-            "Academic faculty constituent distribution and CASE 4-pillar engagement depth",
-            "Primary Degree Types and Constituent Wealth Screening capacity profiles",
-            "Preferred Language, Email deliverability status, and Primary solicitation channel allocations",
-            "FY26 Giving frequency distributions and North American regional state/provincial footprint",
-            "Interactive 41-column CRM dataset snapshot and searchable column dictionary"
-        ]
+        objective="Provides a unified single-pane executive summary of McDill University's overall philanthropic health, pacing toward annual strategic targets, and holistic alumni demographics across all constituent dimensions."
     )
     
     # 6 Top-Line Primary KPI Cards
@@ -1603,7 +1596,6 @@ if selected_module == "📊 Executive Overview (Landing Dashboard)":
 elif selected_module == "🏛️ Philanthropic Health & Revenue":
     
     render_view_banner(
-        title="🏛️ Philanthropic Health & Commitments",
         objective="Performs an in-depth financial evaluation of university fundraising yield, multi-year revenue growth velocity, and giving tier concentration to evaluate long-term financial stability."
     )
     
@@ -1794,7 +1786,6 @@ elif selected_module == "🏛️ Philanthropic Health & Revenue":
 elif selected_module == "🔄 Donor Lifecycle & Retention Funnel":
     
     render_view_banner(
-        title="🔄 Donor Lifecycle & Retention Funnel",
         objective="Tracks constituent migration dynamics across the giving lifecycle - measuring consecutive renewal, attrition prevention (LYBUNT), lapsed reactivation, and first-time donor acquisition."
     )
     
@@ -2034,7 +2025,6 @@ elif selected_module == "🔄 Donor Lifecycle & Retention Funnel":
 elif selected_module == "📈 Marketing Efficiency & Channels":
     
     render_view_banner(
-        title="📈 Marketing Efficiency & Digital Funnel",
         objective="Analyzes the economic efficiency of advancement marketing outreach, solicitation channel conversion efficacy, and the multi-step digital giving conversion funnel."
     )
     
@@ -2273,7 +2263,6 @@ elif selected_module == "📈 Marketing Efficiency & Channels":
 elif selected_module == "🤝 CASE 4-Pillar Engagement (AEM)":
     
     render_view_banner(
-        title="🤝 CASE 4-Pillar Engagement (AEM)",
         objective="Operationalizes the Council for Advancement and Support of Education (CASE) Alumni Engagement Metrics across Philanthropic, Experiential, Volunteer, and Communication modes to measure overall constituent relationship depth.",
         pillars=[
             {"name": "Philanthropic", "icon": "🎁", "desc": "Monetary gifts, annual pledges, and recurring monthly donations."},
@@ -2526,7 +2515,6 @@ elif selected_module == "🤝 CASE 4-Pillar Engagement (AEM)":
 elif selected_module == "💎 Prospect Capacity & Faculty Intelligence":
     
     render_view_banner(
-        title="💎 Prospect Capacity & Faculty Intelligence",
         objective="Leverages wealth screening capacity ratings and academic faculty commitments to prioritize high-capacity major gift cultivation and optimize development officer pipeline coverage."
     )
     
