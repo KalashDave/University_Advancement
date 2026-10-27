@@ -330,65 +330,118 @@ st.markdown("""
     }
     
     /* =========================================================================
-       VISUALLY STUNNING MODULE NAVIGATION BUTTONS IN ROWS
+       FASHIONABLE & DYNAMIC MODULE NAVIGATION BUTTONS IN ROWS
        ========================================================================= */
+    @keyframes gradientFlow {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    @keyframes activePulseGlow {
+        0%, 100% {
+            box-shadow: 0 4px 18px rgba(237, 27, 47, 0.45), 0 0 14px rgba(225, 29, 72, 0.32);
+            border-color: rgba(254, 205, 211, 0.85);
+        }
+        50% {
+            box-shadow: 0 8px 30px rgba(237, 27, 47, 0.75), 0 0 24px rgba(244, 63, 94, 0.55);
+            border-color: #FFFFFF;
+        }
+    }
+
     div[class*="st-key-nav_mod_"] {
-        margin-bottom: 6px !important;
+        margin-bottom: 8px !important;
     }
 
     div[class*="st-key-nav_mod_"] button {
+        position: relative !important;
+        overflow: hidden !important;
         height: auto !important;
-        min-height: 52px !important;
-        border-radius: 10px !important;
+        min-height: 54px !important;
+        border-radius: 12px !important;
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
         font-size: 13.5px !important;
         font-weight: 600 !important;
-        letter-spacing: 0.01em !important;
-        padding: 9px 12px !important;
+        letter-spacing: 0.015em !important;
+        padding: 10px 14px !important;
         white-space: normal !important;
         line-height: 1.35 !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
         text-align: center !important;
-        transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        cursor: pointer !important;
     }
 
-    /* Active Selected Module Button (Primary) */
+    /* Shimmer Light Ray Sweep on Hover */
+    div[class*="st-key-nav_mod_"] button::after {
+        content: '' !important;
+        position: absolute !important;
+        top: -60% !important;
+        left: -80% !important;
+        width: 50% !important;
+        height: 220% !important;
+        background: linear-gradient(
+            65deg,
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 255, 255, 0.18) 50%,
+            rgba(255, 255, 255, 0) 100%
+        ) !important;
+        transform: rotate(25deg) !important;
+        transition: all 0.65s cubic-bezier(0.19, 1, 0.22, 1) !important;
+        pointer-events: none !important;
+        opacity: 0 !important;
+    }
+
+    div[class*="st-key-nav_mod_"] button:hover::after {
+        left: 150% !important;
+        opacity: 1 !important;
+    }
+
+    /* Active Selected Module Button (Primary) with Pulsing Glow & Gradient Flow */
     div[class*="st-key-nav_mod_"] button[kind="primary"],
     div[class*="st-key-nav_mod_"] button[data-testid="baseButton-primary"] {
-        background: linear-gradient(135deg, #ED1B2F 0%, #B91C1C 100%) !important;
+        background: linear-gradient(-45deg, #ED1B2F, #E11D48, #BE123C, #ED1B2F) !important;
+        background-size: 300% 300% !important;
+        animation: activePulseGlow 3s ease-in-out infinite, gradientFlow 6s ease infinite !important;
         color: #FFFFFF !important;
-        border: 1.5px solid #FCA5A5 !important;
-        box-shadow: 0 4px 16px rgba(237, 27, 47, 0.42), 0 0 10px rgba(237, 27, 47, 0.28) !important;
+        border: 1.5px solid rgba(254, 205, 211, 0.85) !important;
         font-weight: 700 !important;
-        transform: translateY(-1px) !important;
+        transform: translateY(-2px) !important;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35) !important;
     }
 
     div[class*="st-key-nav_mod_"] button[kind="primary"]:hover,
     div[class*="st-key-nav_mod_"] button[data-testid="baseButton-primary"]:hover {
-        background: linear-gradient(135deg, #F43F5E 0%, #DC2626 100%) !important;
+        transform: translateY(-4px) scale(1.015) !important;
+        box-shadow: 0 10px 32px rgba(237, 27, 47, 0.75), 0 0 25px rgba(225, 29, 72, 0.55) !important;
         border-color: #FFFFFF !important;
-        box-shadow: 0 6px 20px rgba(237, 27, 47, 0.55) !important;
-        color: #FFFFFF !important;
     }
 
-    /* Inactive Module Button (Secondary) */
+    /* Inactive Module Button (Secondary) with Sleek Glassmorphism & Spring Hover */
     div[class*="st-key-nav_mod_"] button[kind="secondary"],
     div[class*="st-key-nav_mod_"] button[data-testid="baseButton-secondary"] {
-        background-color: #1E293B !important;
+        background: linear-gradient(145deg, #1E293B 0%, #152033 100%) !important;
         color: #E2E8F0 !important;
-        border: 1px solid #334155 !important;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
+        border: 1px solid rgba(148, 163, 184, 0.18) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
     }
 
     div[class*="st-key-nav_mod_"] button[kind="secondary"]:hover,
     div[class*="st-key-nav_mod_"] button[data-testid="baseButton-secondary"]:hover {
-        background-color: #273549 !important;
+        background: linear-gradient(145deg, #273549 0%, #1E293B 100%) !important;
         border-color: #38BDF8 !important;
         color: #38BDF8 !important;
-        transform: translateY(-2px) !important;
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4), 0 0 8px rgba(56, 189, 248, 0.2) !important;
+        transform: translateY(-4px) scale(1.015) !important;
+        box-shadow: 0 12px 28px -4px rgba(0, 0, 0, 0.6), 0 0 18px rgba(56, 189, 248, 0.3) !important;
+        text-shadow: 0 0 10px rgba(56, 189, 248, 0.4) !important;
+    }
+
+    /* Tactile Press Motion */
+    div[class*="st-key-nav_mod_"] button:active {
+        transform: translateY(-1px) scale(0.97) !important;
+        transition: transform 0.08s ease !important;
     }
     
     /* Hide Default Header/Footer */
@@ -902,16 +955,10 @@ nav_modules = [
     }
 ]
 
-# Active module display title
-active_label = next((m["label"] for m in nav_modules if m["id"] == st.session_state.selected_module), "Executive Overview")
-
-st.markdown(f"""
-<div style="display: flex; align-items: center; justify-content: space-between; margin: 6px 0 12px 0;">
-    <div style="font-size: 12px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.06em;">
+st.markdown("""
+<div style="margin: 6px 0 12px 0;">
+    <div style="font-size: 11.5px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.07em;">
         SELECT ADVANCEMENT MODULE / ANALYTIC VIEW:
-    </div>
-    <div style="font-size: 12px; font-weight: 600; color: #38BDF8; background: #1E293B; border: 1px solid #334155; padding: 4px 12px; border-radius: 14px;">
-        Active View: <strong style="color: #FFFFFF;">{active_label}</strong>
     </div>
 </div>
 """, unsafe_allow_html=True)
