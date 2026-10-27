@@ -444,6 +444,109 @@ st.markdown("""
         transition: transform 0.08s ease !important;
     }
     
+    /* Sleek Executive Collapsible Module Banner */
+    details.module-collapsible-banner {
+        background-color: #1E293B !important;
+        border: 1px solid #334155 !important;
+        border-radius: 9px !important;
+        margin: 6px 0 16px 0 !important;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+        overflow: hidden !important;
+    }
+
+    details.module-collapsible-banner:hover {
+        border-color: #475569 !important;
+    }
+
+    details.module-collapsible-banner summary {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        padding: 9px 16px !important;
+        cursor: pointer !important;
+        user-select: none !important;
+        list-style: none !important;
+        outline: none !important;
+        transition: background-color 0.15s ease !important;
+    }
+
+    details.module-collapsible-banner summary::-webkit-details-marker {
+        display: none !important;
+    }
+
+    details.module-collapsible-banner summary:hover {
+        background-color: rgba(51, 65, 85, 0.25) !important;
+    }
+
+    details.module-collapsible-banner .summary-left {
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+        font-size: 13.5px !important;
+        color: #E2E8F0 !important;
+        line-height: 1.45 !important;
+        flex: 1 !important;
+        min-width: 0 !important;
+    }
+
+    details.module-collapsible-banner .summary-icon {
+        font-size: 15px !important;
+        flex-shrink: 0 !important;
+    }
+
+    details.module-collapsible-banner .summary-text {
+        font-weight: 500 !important;
+        color: #E2E8F0 !important;
+    }
+
+    details.module-collapsible-banner .summary-btn {
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        color: #38BDF8 !important;
+        background: rgba(56, 189, 248, 0.1) !important;
+        border: 1px solid rgba(56, 189, 248, 0.3) !important;
+        border-radius: 6px !important;
+        padding: 3px 10px !important;
+        white-space: nowrap !important;
+        margin-left: 12px !important;
+        flex-shrink: 0 !important;
+        transition: all 0.2s ease !important;
+    }
+
+    details.module-collapsible-banner summary:hover .summary-btn {
+        background: rgba(56, 189, 248, 0.22) !important;
+        border-color: #38BDF8 !important;
+        color: #FFFFFF !important;
+        box-shadow: 0 0 10px rgba(56, 189, 248, 0.3) !important;
+    }
+
+    details.module-collapsible-banner .btn-less {
+        display: none !important;
+    }
+
+    details.module-collapsible-banner[open] .btn-more {
+        display: none !important;
+    }
+
+    details.module-collapsible-banner[open] .btn-less {
+        display: inline !important;
+    }
+
+    details.module-collapsible-banner[open] {
+        border-color: #38BDF8 !important;
+        background: linear-gradient(180deg, #1E293B 0%, #152033 100%) !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35), 0 0 12px rgba(56, 189, 248, 0.15) !important;
+    }
+
+    details.module-collapsible-banner .collapsible-body {
+        padding: 12px 18px 16px 18px !important;
+        border-top: 1px solid #334155 !important;
+        font-size: 13.5px !important;
+        color: #CBD5E1 !important;
+        line-height: 1.6 !important;
+    }
+
     /* Hide Default Header/Footer */
     footer {visibility: hidden;}
     #MainMenu {visibility: hidden;}
@@ -699,30 +802,24 @@ def format_tooltip(description: str, calculation: str, benchmark: str = None) ->
     return "\n\n".join(lines)
 
 
-def render_view_banner(title: str = "", objective: str = "", visualizations: list[str] = None, pillars: list[dict] = None):
+def render_view_banner(summary: str = "", details: str = "", objective: str = "", title: str = "", pillars: list[dict] = None, visualizations: list[str] = None, **kwargs):
     """
-    Renders a sleek, minimalist executive briefing strip at the head of each advancement module.
+    Renders an interactive, collapsible executive briefing banner at the head of each module.
 
-    Design Features:
-    ----------------
-    - Omits redundant module titles (the active navigation button directly above already highlights the view).
-    - Omits verbose visualization bullet lists to keep text minimal and scannable.
-    - Presents a clean, high-contrast strategic brief badge with the 1-2 sentence core objective.
-    - For the CASE 4-Pillar module, presents an organized 4-card micro-grid detailing each engagement dimension.
+    Default State (Collapsed):
+    --------------------------
+    A sleek, compact 40px horizontal bar displaying a concise 1-line summary teaser
+    along with an interactive 'See details ▾' expansion chip.
 
-    Parameters:
-    -----------
-    title : str, optional
-        Retained for backward-compatibility; omitted from rendered display.
-    objective : str
-        Business context and strategic objective of the module.
-    visualizations : list of str, optional
-        Retained for backward-compatibility; omitted from rendered display.
-    pillars : list of dict, optional
-        Definitions of the 4 CASE AEM engagement pillars (used on CASE Module).
+    Expanded State:
+    ---------------
+    Reveals the comprehensive strategic methodology, decision-support scope, and
+    (on the CASE page) an organized 4-card micro-grid detailing each relationship pillar.
     """
-    desc_text = objective or title
+    sum_text = summary or objective or title
+    det_text = details or objective or summary
 
+    pillars_html = ""
     if pillars and len(pillars) > 0:
         pillar_colors = {
             "Philanthropic": "#34D399",
@@ -742,23 +839,29 @@ def render_view_banner(title: str = "", objective: str = "", visualizations: lis
 </div>"""
             pillar_cards.append(p_card)
         pillars_grid = "".join(pillar_cards)
-        
-        banner_html = f"""<div style="background: rgba(30, 41, 59, 0.45); border: 1px solid rgba(51, 65, 85, 0.65); border-left: 3px solid #A78BFA; border-radius: 8px; padding: 12px 16px 14px 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
-<div style="font-size: 13.5px; color: #E2E8F0; line-height: 1.5; margin-bottom: 12px; display: flex; align-items: baseline; gap: 8px;">
-<span style="font-size: 10.5px; font-weight: 700; color: #A78BFA; letter-spacing: 0.06em; text-transform: uppercase; background: rgba(167, 139, 250, 0.14); padding: 2px 7px; border-radius: 4px; white-space: nowrap;">CASE FRAMEWORK</span>
-<span>{desc_text}</span>
-</div>
+        pillars_html = f"""<div style="margin-top: 14px;">
+<div style="font-size: 11px; font-weight: 700; color: #A78BFA; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px;">The 4 CASE AEM Relationship Pillars</div>
 <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
 {pillars_grid}
 </div>
 </div>"""
-    else:
-        banner_html = f"""<div style="background: rgba(30, 41, 59, 0.45); border: 1px solid rgba(51, 65, 85, 0.65); border-left: 3px solid #38BDF8; border-radius: 8px; padding: 9px 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
-<div style="font-size: 13.5px; color: #E2E8F0; line-height: 1.5; display: flex; align-items: baseline; gap: 8px;">
-<span style="font-size: 10.5px; font-weight: 700; color: #38BDF8; letter-spacing: 0.06em; text-transform: uppercase; background: rgba(56, 189, 248, 0.14); padding: 2px 7px; border-radius: 4px; white-space: nowrap;">STRATEGIC BRIEF</span>
-<span>{desc_text}</span>
+
+    banner_html = f"""<details class="module-collapsible-banner">
+<summary>
+<div class="summary-left">
+<span class="summary-icon">💡</span>
+<span class="summary-text">{sum_text}</span>
 </div>
-</div>"""
+<div class="summary-btn">
+<span class="btn-more">See details ▾</span>
+<span class="btn-less">Hide details ▴</span>
+</div>
+</summary>
+<div class="collapsible-body">
+<div class="collapsible-desc">{det_text}</div>
+{pillars_html}
+</div>
+</details>"""
 
     st.markdown(banner_html, unsafe_allow_html=True)
 
@@ -1019,7 +1122,8 @@ selected_module = st.session_state.selected_module
 if selected_module == "📊 Executive Overview (Landing Dashboard)":
     
     render_view_banner(
-        objective="Provides a unified single-pane executive summary of McDill University's overall philanthropic health, pacing toward annual strategic targets, and holistic alumni demographics across all constituent dimensions."
+        summary="Single-pane executive summary of McDill's philanthropic revenue velocity, campaign pacing, and alumni demographics.",
+        details="This strategic briefing dashboard monitors cumulative philanthropic revenue, donor counts, retention rate, cost to raise a dollar (CRD), giving day performance, and pacing toward the annual $4.00M institutional target. It provides comprehensive constituent distributions spanning graduation vintage, generational age cohorts, gender identity, global countries, academic faculties, degree levels, wealth screening capacity tiers, preferred language, email deliverability, giving frequency, and regional North American jurisdictions."
     )
     
     # 6 Top-Line Primary KPI Cards
@@ -1596,7 +1700,8 @@ if selected_module == "📊 Executive Overview (Landing Dashboard)":
 elif selected_module == "🏛️ Philanthropic Health & Revenue":
     
     render_view_banner(
-        objective="Performs an in-depth financial evaluation of university fundraising yield, multi-year revenue growth velocity, and giving tier concentration to evaluate long-term financial stability."
+        summary="Financial evaluation of university fundraising yield, multi-year commitments velocity, giving tier concentration, and faculty performance.",
+        details="Performs an in-depth financial audit of institutional fundraising yield, multi-year revenue growth trajectory (FY24 to FY26), and Pareto giving tier concentration from small-dollar annual gifts (<$100) to major gifts ($10k+). Highlights seasonal transaction peaks around calendar year-end and Giving Day, cross-tabulates faculty revenue yield, and analyzes philanthropic contributions across Undergraduate, Masters, PhD, and MD/JD degree levels."
     )
     
     p1, p2, p3 = st.columns(3)
@@ -1786,7 +1891,8 @@ elif selected_module == "🏛️ Philanthropic Health & Revenue":
 elif selected_module == "🔄 Donor Lifecycle & Retention Funnel":
     
     render_view_banner(
-        objective="Tracks constituent migration dynamics across the giving lifecycle - measuring consecutive renewal, attrition prevention (LYBUNT), lapsed reactivation, and first-time donor acquisition."
+        summary="Constituent migration tracking across consecutive renewal, LYBUNT attrition prevention, lapsed reactivation, and new donor acquisition.",
+        details="Tracks constituent migration dynamics across the donor lifecycle using Sankey flow modeling. Evaluates consecutive renewal rates across graduation cohorts (Young, Mid-Career, Senior), analyzes lapsed constituent reactivation by solicitation channel, measures giving habituation and loyalty curves based on prior gift history, identifies first-time donor acquisition velocity across academic faculties, and benchmarks monthly sustainer recurring gift adoption across generational cohorts."
     )
     
     gave_prior_pool = (filtered_df['Gave_Prior'] == 1) & (filtered_df['Donated_FY25'] == 0)
@@ -2025,7 +2131,8 @@ elif selected_module == "🔄 Donor Lifecycle & Retention Funnel":
 elif selected_module == "📈 Marketing Efficiency & Channels":
     
     render_view_banner(
-        objective="Analyzes the economic efficiency of advancement marketing outreach, solicitation channel conversion efficacy, and the multi-step digital giving conversion funnel."
+        summary="Economic evaluation of solicitation channel conversion efficacy, cost per dollar raised (CPDR), and the digital giving funnel.",
+        details="Evaluates the economic efficiency of advancement marketing outreach across Digital Solicitation, Direct Mail Letter, Student Phonathon, and Crowdfunding McDill24. Benchmarks Cost per Dollar Raised (CPDR / CRD) against the Association of Fundraising Professionals (AFP) $0.15 standard, maps constituent drop-off across the 5-stage digital giving funnel (Delivered -> Opened -> Clicked -> Visited -> Donated), and analyzes email open and click-through rates across academic faculties."
     )
     
     cpdr = (tot_cost / tot_rev_fy26) if tot_rev_fy26 > 0 else 0.0
@@ -2263,7 +2370,8 @@ elif selected_module == "📈 Marketing Efficiency & Channels":
 elif selected_module == "🤝 CASE 4-Pillar Engagement (AEM)":
     
     render_view_banner(
-        objective="Operationalizes the Council for Advancement and Support of Education (CASE) Alumni Engagement Metrics across Philanthropic, Experiential, Volunteer, and Communication modes to measure overall constituent relationship depth.",
+        summary="Operationalizes the Council for Advancement and Support of Education (CASE) Alumni Engagement Metrics across 4 core relationship pillars.",
+        details="Operationalizes the Council for Advancement and Support of Education (CASE) Alumni Engagement Metrics framework. Quantifies multi-modal engagement breadth, proving that constituents active in two or more engagement modes demonstrate up to a 9x higher giving rate. Evaluates experiential event registration show rates, volunteer leadership giving impact, volunteer hours logged commitment brackets, and digital portal (McDill Connect) adoption across graduation cohorts.",
         pillars=[
             {"name": "Philanthropic", "icon": "🎁", "desc": "Monetary gifts, annual pledges, and recurring monthly donations."},
             {"name": "Experiential", "icon": "🎟️", "desc": "In-person & virtual event attendance, reunions, and webinars."},
@@ -2515,7 +2623,8 @@ elif selected_module == "🤝 CASE 4-Pillar Engagement (AEM)":
 elif selected_module == "💎 Prospect Capacity & Faculty Intelligence":
     
     render_view_banner(
-        objective="Leverages wealth screening capacity ratings and academic faculty commitments to prioritize high-capacity major gift cultivation and optimize development officer pipeline coverage."
+        summary="Wealth screening capacity ratings and academic faculty intelligence to prioritize major gift prospect cultivation.",
+        details="Leverages third-party wealth screening capacity ratings and academic faculty commitments to optimize development officer pipeline coverage. Cross-tabulates prospect counts, donor participation rates, and revenue yield across Tier 1 ($100k+) through Tier 5 brackets, identifies high-capacity ($25k+) major gift discovery pools by faculty, maps wealth capacity tier composition across age generations, and evaluates average realized donation size per screening bracket."
     )
     
     t1_t2_rev = filtered_df[filtered_df['Wealth_Screening_Rating'].isin(['Tier 1: $100k+', 'Tier 2: $25k-$99k'])]['Giving_Amount_FY26'].sum()
