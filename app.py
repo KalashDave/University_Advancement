@@ -329,6 +329,68 @@ st.markdown("""
         }
     }
     
+    /* =========================================================================
+       VISUALLY STUNNING MODULE NAVIGATION BUTTONS IN ROWS
+       ========================================================================= */
+    div[class*="st-key-nav_mod_"] {
+        margin-bottom: 6px !important;
+    }
+
+    div[class*="st-key-nav_mod_"] button {
+        height: auto !important;
+        min-height: 52px !important;
+        border-radius: 10px !important;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+        font-size: 13.5px !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.01em !important;
+        padding: 9px 12px !important;
+        white-space: normal !important;
+        line-height: 1.35 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+        transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+
+    /* Active Selected Module Button (Primary) */
+    div[class*="st-key-nav_mod_"] button[kind="primary"],
+    div[class*="st-key-nav_mod_"] button[data-testid="baseButton-primary"] {
+        background: linear-gradient(135deg, #ED1B2F 0%, #B91C1C 100%) !important;
+        color: #FFFFFF !important;
+        border: 1.5px solid #FCA5A5 !important;
+        box-shadow: 0 4px 16px rgba(237, 27, 47, 0.42), 0 0 10px rgba(237, 27, 47, 0.28) !important;
+        font-weight: 700 !important;
+        transform: translateY(-1px) !important;
+    }
+
+    div[class*="st-key-nav_mod_"] button[kind="primary"]:hover,
+    div[class*="st-key-nav_mod_"] button[data-testid="baseButton-primary"]:hover {
+        background: linear-gradient(135deg, #F43F5E 0%, #DC2626 100%) !important;
+        border-color: #FFFFFF !important;
+        box-shadow: 0 6px 20px rgba(237, 27, 47, 0.55) !important;
+        color: #FFFFFF !important;
+    }
+
+    /* Inactive Module Button (Secondary) */
+    div[class*="st-key-nav_mod_"] button[kind="secondary"],
+    div[class*="st-key-nav_mod_"] button[data-testid="baseButton-secondary"] {
+        background-color: #1E293B !important;
+        color: #E2E8F0 !important;
+        border: 1px solid #334155 !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
+    }
+
+    div[class*="st-key-nav_mod_"] button[kind="secondary"]:hover,
+    div[class*="st-key-nav_mod_"] button[data-testid="baseButton-secondary"]:hover {
+        background-color: #273549 !important;
+        border-color: #38BDF8 !important;
+        color: #38BDF8 !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4), 0 0 8px rgba(56, 189, 248, 0.2) !important;
+    }
+    
     /* Hide Default Header/Footer */
     footer {visibility: hidden;}
     #MainMenu {visibility: hidden;}
@@ -801,21 +863,109 @@ An enterprise institutional advancement intelligence platform providing strategi
 
 st.markdown(title_html, unsafe_allow_html=True)
 
-# Prominent Module Selector (Big Dropdown)
-selected_module = st.selectbox(
-    "SELECT ADVANCEMENT MODULE / ANALYTIC VIEW:",
-    options=[
-        "📊 Executive Overview (Landing Dashboard)",
-        "🏛️ Philanthropic Health & Revenue",
-        "🔄 Donor Lifecycle & Retention Funnel",
-        "📈 Marketing Efficiency & Channels",
-        "🤝 CASE 4-Pillar Engagement (AEM)",
-        "💎 Prospect Capacity & Faculty Intelligence"
-    ],
-    index=0
-)
+# =============================================================================
+# 5. INTERACTIVE MODULE NAVIGATION (VISUALLY STUNNING BUTTONS IN ROWS)
+# =============================================================================
+if "selected_module" not in st.session_state:
+    st.session_state.selected_module = "📊 Executive Overview (Landing Dashboard)"
 
-st.markdown("<div style='margin-bottom: 12px;'></div>", unsafe_allow_html=True)
+nav_modules = [
+    {
+        "id": "📊 Executive Overview (Landing Dashboard)",
+        "label": "📊 Executive Overview",
+        "help": "Single-pane institutional overview, core KPIs, and demographics."
+    },
+    {
+        "id": "🏛️ Philanthropic Health & Revenue",
+        "label": "🏛️ Philanthropic Health & Revenue",
+        "help": "Fundraising velocity, giving tiers, and commitments trajectory."
+    },
+    {
+        "id": "🔄 Donor Lifecycle & Retention Funnel",
+        "label": "🔄 Donor Lifecycle & Funnel",
+        "help": "Consecutive renewal, LYBUNT risk, and recurring sustainers."
+    },
+    {
+        "id": "📈 Marketing Efficiency & Channels",
+        "label": "📈 Marketing Efficiency & Channels",
+        "help": "Cost per dollar raised, channel ROI, and digital conversion."
+    },
+    {
+        "id": "🤝 CASE 4-Pillar Engagement (AEM)",
+        "label": "🤝 CASE 4-Pillar Engagement (AEM)",
+        "help": "Alumni Engagement Metrics (Philanthropic, Experiential, Volunteer, Communication)."
+    },
+    {
+        "id": "💎 Prospect Capacity & Faculty Intelligence",
+        "label": "💎 Prospect Capacity & Intelligence",
+        "help": "Wealth screening capacity ratings and major gift discovery pipeline."
+    }
+]
+
+# Active module display title
+active_label = next((m["label"] for m in nav_modules if m["id"] == st.session_state.selected_module), "Executive Overview")
+
+st.markdown(f"""
+<div style="display: flex; align-items: center; justify-content: space-between; margin: 6px 0 12px 0;">
+    <div style="font-size: 12px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.06em;">
+        SELECT ADVANCEMENT MODULE / ANALYTIC VIEW:
+    </div>
+    <div style="font-size: 12px; font-weight: 600; color: #38BDF8; background: #1E293B; border: 1px solid #334155; padding: 4px 12px; border-radius: 14px;">
+        Active View: <strong style="color: #FFFFFF;">{active_label}</strong>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+# Row 1: First 3 Modules
+r1_c1, r1_c2, r1_c3 = st.columns(3)
+with r1_c1:
+    m = nav_modules[0]
+    is_active = (st.session_state.selected_module == m["id"])
+    if st.button(m["label"], key="nav_mod_0", use_container_width=True, type="primary" if is_active else "secondary", help=m["help"]):
+        st.session_state.selected_module = m["id"]
+        st.rerun()
+
+with r1_c2:
+    m = nav_modules[1]
+    is_active = (st.session_state.selected_module == m["id"])
+    if st.button(m["label"], key="nav_mod_1", use_container_width=True, type="primary" if is_active else "secondary", help=m["help"]):
+        st.session_state.selected_module = m["id"]
+        st.rerun()
+
+with r1_c3:
+    m = nav_modules[2]
+    is_active = (st.session_state.selected_module == m["id"])
+    if st.button(m["label"], key="nav_mod_2", use_container_width=True, type="primary" if is_active else "secondary", help=m["help"]):
+        st.session_state.selected_module = m["id"]
+        st.rerun()
+
+# Row 2: Next 3 Modules
+r2_c1, r2_c2, r2_c3 = st.columns(3)
+with r2_c1:
+    m = nav_modules[3]
+    is_active = (st.session_state.selected_module == m["id"])
+    if st.button(m["label"], key="nav_mod_3", use_container_width=True, type="primary" if is_active else "secondary", help=m["help"]):
+        st.session_state.selected_module = m["id"]
+        st.rerun()
+
+with r2_c2:
+    m = nav_modules[4]
+    is_active = (st.session_state.selected_module == m["id"])
+    if st.button(m["label"], key="nav_mod_4", use_container_width=True, type="primary" if is_active else "secondary", help=m["help"]):
+        st.session_state.selected_module = m["id"]
+        st.rerun()
+
+with r2_c3:
+    m = nav_modules[5]
+    is_active = (st.session_state.selected_module == m["id"])
+    if st.button(m["label"], key="nav_mod_5", use_container_width=True, type="primary" if is_active else "secondary", help=m["help"]):
+        st.session_state.selected_module = m["id"]
+        st.rerun()
+
+st.markdown("<div style='margin-bottom: 14px;'></div>", unsafe_allow_html=True)
+
+# Synchronize selected_module for downstream module routing
+selected_module = st.session_state.selected_module
 
 
 # =============================================================================
