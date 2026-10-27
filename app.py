@@ -45,6 +45,7 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 import os
+from typing import Optional, List, Dict, Any
 
 # =============================================================================
 # 1. PAGE CONFIGURATION & EXECUTIVE HIGH-CONTRAST DARK THEME
@@ -775,7 +776,7 @@ def apply_dark_theme(fig, height=270):
     return fig
 
 
-def format_tooltip(description: str, calculation: str, benchmark: str = None) -> str:
+def format_tooltip(description: str, calculation: str, benchmark: Optional[str] = None) -> str:
     """
     Constructs a standardized, multi-line executive tooltip for st.metric cards.
 
@@ -802,7 +803,7 @@ def format_tooltip(description: str, calculation: str, benchmark: str = None) ->
     return "\n\n".join(lines)
 
 
-def render_view_banner(summary: str = "", details: str = "", objective: str = "", title: str = "", pillars: list[dict] = None, visualizations: list[str] = None, **kwargs):
+def render_view_banner(summary: str = "", details: str = "", objective: str = "", title: str = "", pillars: Optional[List[Dict[str, Any]]] = None, visualizations: Optional[List[str]] = None, **kwargs):
     """
     Renders an interactive, collapsible executive briefing banner at the head of each module.
 
@@ -829,7 +830,8 @@ def render_view_banner(summary: str = "", details: str = "", objective: str = ""
         }
         pillar_cards = []
         for p in pillars:
-            p_color = pillar_colors.get(p.get("name"), "#38BDF8")
+            p_name = str(p.get("name", ""))
+            p_color = pillar_colors.get(p_name, "#38BDF8")
             p_card = f"""<div style="background: rgba(15, 23, 42, 0.7); border: 1px solid #334155; border-top: 2.5px solid {p_color}; border-radius: 8px; padding: 10px 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.2);">
 <div style="font-size: 13px; font-weight: 700; color: #FFFFFF; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
 <span>{p['icon']}</span>

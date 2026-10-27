@@ -37,46 +37,17 @@ The following end-to-end architecture diagram outlines how this project was desi
 
 ```mermaid
 flowchart TD
-    subgraph Phase1["1. Problem Definition & Domain Scoping"]
-        A1["Identify Higher Ed Advancement Challenges"] --> A2["Review CASE AEM Benchmarks & Standards"]
-        A2 --> A3["Define 5 Functional Data Domains & Core Metrics"]
-    end
+    Step1["<b>1. Problem Definition & Domain Scoping</b><br/>Identify higher education advancement challenges, CASE AEM standards, and KPI targets"]
+    --> Step2["<b>2. CRM Data Synthesis Engine</b><br/><code>generate_raw_crm_data.py</code> simulates 30,000 constituent records across 41 columns"]
+    --> Step3["<b>3. Feature Engineering & Preprocessing</b><br/>In-memory memoization (<code>@st.cache_data</code>), cohort derivation, and CASE 4-pillar enrichment"]
+    --> Step4["<b>4. Executive Analytics Portal</b><br/>Interactive dark theme dashboard spanning 6 specialized views with dynamic global slicers"]
+    --> Step5["<b>5. Containerization & Cloud Deployment</b><br/>Production Docker container automatically deployed to Render Free Tier via GitHub CI/CD"]
 
-    subgraph Phase2["2. Probabilistic Data Synthesis Engine"]
-        B1["generate_raw_crm_data.py"] --> B2["Simulate 30,000 Atomic Records across 41 Columns"]
-        B2 --> B3["Apply Real-World Distributions (Pareto, Beta-Binomial, Poisson)"]
-        B3 --> B4["Execute Strict Sanity Assertions (Zero Impossible Rows)"]
-        B4 --> B5[("mcgill_advancement_raw_crm.csv (6.1 MB)")]
-    end
-
-    subgraph Phase3["3. Data Ingestion & Dynamic Feature Engineering"]
-        C1["app.py: Load Raw CSV Extract"] --> C2["In-Memory Memoization via @st.cache_data"]
-        C2 --> C3["Derive Graduation Cohorts & Generational Bins"]
-        C3 --> C4["Calculate CASE 4-Pillar Flags & Loyalty Indices"]
-    end
-
-    subgraph Phase4["4. User Experience & Interactive Analytics Portal"]
-        D1["Sidebar Multi-Select Global Slicers"] --> D2["Dynamic In-Memory DataFrame Filtering"]
-        D2 --> D3["Executive Overview: Strategic KPIs & Demographics"]
-        D2 --> D4["Philanthropic Health: Pareto Concentration & Seasonality"]
-        D2 --> D5["Donor Lifecycle: Retention Funnel & Sustainer Velocity"]
-        D2 --> D6["Marketing Efficiency: Channel ROI & Funnel Attribution"]
-        D2 --> D7["CASE AEM: 4-Pillar Breadth & Cross-Modal Lift"]
-        D2 --> D8["Prospect Capacity: Wealth Tiers & Major Gift Pipeline"]
-        D2 --> D9["CRM Snapshot Table with CSS Tooltip Hover Cards"]
-    end
-
-    subgraph Phase5["5. Production Containerization & Cloud Deployment"]
-        E1["Dockerfile: Debian Python 3.11-slim Base Image"] --> E2["Layer Caching Strategy for Dependencies"]
-        E2 --> E3["Dynamic $PORT Runtime Binding & Healthchecks"]
-        E3 --> E4["render.yaml Infrastructure-as-Code Blueprint"]
-        E4 --> E5["Render Free Tier Cloud Container Deployment"]
-    end
-
-    Phase1 --> Phase2
-    Phase2 --> Phase3
-    Phase3 --> Phase4
-    Phase4 --> Phase5
+    style Step1 fill:#1E293B,stroke:#38BDF8,stroke-width:2px,color:#F8FAFC
+    style Step2 fill:#1E293B,stroke:#38BDF8,stroke-width:2px,color:#F8FAFC
+    style Step3 fill:#1E293B,stroke:#38BDF8,stroke-width:2px,color:#F8FAFC
+    style Step4 fill:#1E293B,stroke:#38BDF8,stroke-width:2px,color:#F8FAFC
+    style Step5 fill:#1E293B,stroke:#38BDF8,stroke-width:2px,color:#F8FAFC
 ```
 
 ### Development Methodology Stages
