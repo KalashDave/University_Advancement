@@ -96,7 +96,7 @@ The repository is built using an enterprise Python analytics stack optimized for
 | :--- | :--- | :--- |
 | **Data Engineering & Synthesis** | Python 3.11, NumPy, Pandas | Deterministic generation of 30,000 constituent records with 41 raw database attributes, Pareto gift distributions, and automated data integrity assertion suites. |
 | **Analytics & UI Engine** | Streamlit (>=1.35.0) | High-contrast Executive Midnight interface, multi-select global slicers, in-memory caching via `@st.cache_data`, and custom responsive CSS component containers. |
-| **Data Visualization** | Plotly Express, Plotly Graph Objects (>=5.18.0) | 2x2 grid suites per module, interactive hover cards, multi-year trend trajectories, Pareto concentration charts, and demographic distributions. |
+| **Data Visualization** | Plotly Express, Plotly Graph Objects (>=5.18.0) | 6-chart analytical grids per module, 7 comprehensive demographic and column distribution suites on landing page, interactive tooltips, multi-year trend trajectories, and Pareto concentration charts. |
 | **Containerization & Cloud Ops** | Docker, Render PaaS, Linux / Debian Slim | Production Docker containerization with layer caching, curl healthchecks, dynamic `$PORT` binding, and Render Blueprint infrastructure-as-code automation. |
 
 ---
@@ -211,36 +211,56 @@ All filters reside in the collapsible left sidebar and default to "All" options:
 #### View 1: Executive Overview (Landing Dashboard)
 * **Purpose:** Single-pane institutional briefing for the President, Provost, and Vice-President of Advancement.
 * **Primary KPI Cards:** Total Revenue ($ CAD), Active Donors, Alumni Participation Rate (%), Donor Retention Rate (%), Average Gift Yield ($ CAD), Marketing ROI Multiple.
-* **Secondary Aligned Cards:** McDill24 Giving Day Revenue ($ CAD), Monthly Sustainers (Count and Share), Campaign Goal Pace ($100M Goal).
-* **Visualizations:** Class Year graduation timeline distribution, Generational age breakdown (Silent to Gen Z), Gender identity share, and Global geographic footprint.
-* **Dataset Snapshot:** Interactive HTML preview of the underlying CRM extract with custom hover tooltips detailing every column definition.
+* **Secondary Aligned Cards:** McDill24 Giving Day Revenue ($ CAD), Monthly Sustainers (Count and Share), Campaign Goal Pace ($4M Goal).
+* **Comprehensive Column Distribution Suites (7 Suites):**
+  1. *Development Revenue Velocity (FY24 to FY26):* Multi-year area spline tracking fundraising trajectory.
+  2. *Gift Designation Allocation Share:* Donut chart breakdown across university fund priorities.
+  3. *Graduation Class Year Timeline (1965 to 2025):* Area plot of addressable alumni density across 60 cohorts.
+  4. *Generational Age Distribution:* Bar chart of birth cohorts (Silent, Boomers, Gen X, Millennials, Gen Z).
+  5. *Constituent Gender Identity Breakdown:* Donut chart of female, male, and non-binary/other representation.
+  6. *Global Footprint:* Horizontal ranking of alumni across top international countries of residence.
+  7. *Academic Faculty Distribution:* Constituent counts across all eight faculties.
+  8. *CASE 4-Pillar Multi-Modal Engagement Depth:* Donut chart showing constituent spread from 0 to 4 engagement modes.
+  9. *Primary Degree Type Distribution:* Proportions of Undergraduate, Masters, PhD, and Professional (MD/JD) degrees.
+  10. *Constituent Wealth Screening Capacity Distribution:* Headcount across Tier 1 ($100k+) through Tier 5 and Unrated.
+  11. *Preferred Language & Deliverable Email Status:* English vs. French constituents cross-tabulated with valid email deliverability.
+  12. *Primary Solicitation Channel Allocation:* Breakdown of FY26 outreach assignments across marketing channels.
+  13. *FY26 Giving Frequency Distribution:* Non-donors, single-gift donors, repeat donors, and monthly sustainers (6+ gifts).
+  14. *North American Regional Footprint:* Top Canadian provinces and US states of residence.
+* **Dataset Snapshot:** Interactive HTML preview of the underlying 41-column CRM extract with custom hover tooltips detailing every column definition.
 
 #### View 2: Philanthropic Health & Revenue
 * **Purpose:** Financial auditing of fundraising yield, giving tier concentration, and revenue velocity.
 * **KPIs:** FY26 Total Commitments, Average Gift Yield, McDill24 Campaign Contribution.
-* **Visualizations (2x2 Grid):**
+* **Visualizations (6-Chart Analytical Suite):**
   1. *Multi-Year Commitments Trajectory (FY24 to FY26):* Assesses year-over-year fundraising growth.
   2. *Giving Amount Tier Concentration (Pareto Dispersion):* Breaks down dollars by gift bracket (<$100 to $10k+).
   3. *Monthly Giving Seasonality Trend:* Tracks calendar peaks around year-end tax deadlines and Giving Day.
   4. *Average Gift Yield by Academic Faculty:* Ranks academic divisions by average donation size.
+  5. *McDill24 Giving Day Yield by Academic Faculty:* Measures 24-hour crowdfunding commitments mobilized by faculty.
+  6. *Philanthropic Commitments by Degree Level:* Evaluates total funding and average gift yield across degree levels.
 
 #### View 3: Donor Lifecycle & Retention Funnel
 * **Purpose:** Evaluates constituent migration dynamics across consecutive renewal, attrition risk, and reactivation.
 * **KPIs:** Consecutive Retention Rate (FY25 to FY26), Lapsed Reactivation Rate, First-Time Donor Acquisition Rate, Monthly Sustainer Penetration.
-* **Visualizations (2x2 Grid):**
-  1. *Three-Year Longitudinal Donor Trajectory:* Compares active donor population counts across FY24, FY25, and FY26.
-  2. *Constituent Lifecycle Stage Segmentation:* Classifies the universe into Donors, Lapsed prospects, and Never-Givers.
-  3. *Donor Retention Benchmarks:* Contrasts consecutive retention and reactivation rates against CASE standards.
-  4. *Monthly Sustainer Growth & Impact:* Evaluates the revenue contribution of recurring monthly donors versus one-time donors.
+* **Visualizations (6-Chart Analytical Suite):**
+  1. *Donor Migration Flow (FY25 to FY26):* Sankey diagram visualizing flow into retained, LYBUNT, reactivated, and acquired states.
+  2. *Consecutive Retention by Graduation Cohort:* Contrasts renewal rates across Young, Mid-Career, and Senior alumni.
+  3. *Lapsed Reactivation Rate by Solicitation Channel:* Evaluates recovery effectiveness across marketing channels.
+  4. *Prior Giving History vs. FY26 Renewal Rate:* Demonstrates the power of historical giving habituation on renewal.
+  5. *First-Time Donor Acquisition Rate by Faculty:* Identifies faculties with the most effective new donor onboarding pipelines.
+  6. *Monthly Sustainer Adoption Share by Generation:* Evaluates automated recurring giving penetration across age cohorts.
 
 #### View 4: Marketing Efficiency & Channels
 * **Purpose:** Analyzes the economic return of solicitation channels and tracks digital giving funnel conversion.
 * **KPIs:** Cost per Dollar Raised (CPDR), Marketing ROI Multiple, Email Open Rate (%), GA4 Online Giving Portal Conversion Rate (%).
-* **Visualizations (2x2 Grid):**
-  1. *Philanthropic Revenue by Solicitation Channel:* Compares dollars raised via Digital, Direct Mail, Phonathon, and McDill24.
-  2. *Channel Conversion Rate (%):* Measures donor conversion efficiency across channels.
-  3. *Marketing Outreach Cost vs. Revenue:* Evaluates direct outreach expenditure against total dollars raised.
-  4. *Net ROI Multiple by Channel:* Ranks solicitation channels by return on marketing investment.
+* **Visualizations (6-Chart Analytical Suite):**
+  1. *Channel Conversion Rate (%):* Measures donor conversion efficiency across channels.
+  2. *Digital Giving Funnel:* Five-stage progression tracking drop-off from delivered email to completed donation.
+  3. *Marketing ROI Multiplier by Solicitation Channel:* Ranks solicitation channels by return on marketing investment.
+  4. *Direct Mail & Phonathon Appeal Volume vs. Donors:* Contrasts physical outreach volume with resulting donor counts.
+  5. *Cost to Raise a Dollar (CRD) by Solicitation Channel:* Evaluates fundraising expenditure per dollar against AFP $0.15 standard.
+  6. *Digital Email Engagement Rates by Academic Faculty:* Compares email open and click-through rates across faculties.
 
 #### View 5: CASE 4-Pillar Engagement (AEM)
 * **Purpose:** Operationalizes the Council for Advancement and Support of Education framework across all four recognized dimensions. For detailed reference on the underlying framework, visit the official [CASE Insights on Alumni Engagement](https://www.case.org/resources/case-insights-alumni-engagement) portal.
@@ -250,20 +270,24 @@ All filters reside in the collapsible left sidebar and default to "All" options:
   3. *Volunteer:* Alumni boards, student mentoring, advisory panels, and committee leadership.
   4. *Communication:* Opening digital university appeals, reading newsletters, and McDill Connect logins.
 * **KPIs:** Event Attendance Rate (Experiential), Ticket Show Rate (Realized Attendance), 2+ CASE Modes Multi-Modal Share, Active Volunteers Count.
-* **Visualizations (2x2 Grid):**
-  1. *CASE 4-Pillar Constituent Penetration Rates:* Compares participation across all four dimensions.
-  2. *Multi-Pillar Constituent Breadth:* Illustrates constituent overlap across 0, 1, 2, 3, or all 4 engagement pillars.
-  3. *Experiential Attendance by Graduation Cohort:* Analyzes event participation differences between Young, Mid-Career, and Senior alumni.
-  4. *Communication Engagement across Academic Faculties:* Ranks faculties by digital open and login rates.
+* **Visualizations (6-Chart Analytical Suite):**
+  1. *CASE Engagement Modes vs. Giving Rate (%):* Demonstrates how multi-modal engagement exponentially lifts giving rates.
+  2. *CASE 4-Pillar Constituent Participation Breakdown:* Compares penetration across Communication, Experiential, Philanthropic, and Volunteer modes.
+  3. *Experiential Pillar: Registration vs. Show Rate:* Evaluates event attendance conversion across graduation cohorts.
+  4. *Volunteer Leadership Philanthropic Impact:* Compares giving rates of active volunteers against non-volunteers.
+  5. *Volunteer Pillar: Logged Hours Commitment Brackets:* Analyzes volunteer counts and giving rates across hours logged.
+  6. *Communication Pillar: Digital Portal Logins by Cohort:* Tracks McDill Connect portal adoption and login frequency.
 
 #### View 6: Prospect Capacity & Faculty Intelligence
 * **Purpose:** Equips major gift officers and faculty development directors with wealth screening insights and prioritized prospect pipelines.
 * **KPIs:** Top Tier Giving ($100k+ Tier 1 & Tier 2 Totals), Tier 1 ($100k+) Conversion Rate, Tier 2 ($25k-$99k) Conversion Rate.
-* **Visualizations (2x2 Grid):**
+* **Visualizations (6 Analytical Components):**
   1. *Faculty Commitments ($ CAD):* Ranks academic divisions by total philanthropic commitments secured.
   2. *Wealth Capacity Tier Conversion Rates (%):* Evaluates giving rates across wealth screening brackets.
   3. *Wealth Screening Matrix:* Cross-tabulates alumni counts, donor totals, participation rates, and dollars raised per tier.
   4. *Major Gift Pipeline ($25k+ Capacity) by Faculty:* Identifies major gift opportunity pools across academic divisions.
+  5. *Capacity Tier Composition by Generational Cohort:* Stacked distribution of wealth tiers across age generations.
+  6. *Average Realized Gift Size by Capacity Tier:* Compares mean donation amounts realized from active donors within each tier.
 
 ---
 
